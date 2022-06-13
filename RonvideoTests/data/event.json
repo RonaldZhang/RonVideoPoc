@@ -1,0 +1,33 @@
+﻿{
+	"id": "f192e61f-7f40-4d37-be19-e5a92da8c5f8",
+	"firstEmittedAt": "2018-06-14T15:08:18.466Z",
+	"lastEmittedAt": "2018-06-14T15:08:18.466Z",
+	"attempt": 1,
+	"status": "EMITTED",
+	"data": {
+		"id": "c8dbb6ca-72b4-41eb-815a-e398995840f9",
+		"type": "closing",
+		"action": "updated",
+		"solution": "CONSUMER_MORTGAGE",
+		"fields": {
+			"application": {
+				"id": "fce82416-4cbd-44fa-b584-063fbea198c5"
+			},
+			"solutionSubType": {
+				"value": "MORTGAGE"
+			},
+			"recordingFiles": [
+				{
+					"fileId": "Test1",
+					"size": 1234,
+					"duration": 3500
+				}
+			]
+		}
+	},
+	"links": {
+		"application": {
+			"href": "https://api.beta.blend.com/home-lending/applications/282f3df7-7900-45d5-aafe-b438def61d7a"
+		}
+	}
+}

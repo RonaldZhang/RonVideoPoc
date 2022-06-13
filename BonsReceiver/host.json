@@ -1,0 +1,31 @@
+{
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      }
+    },
+    "logLevel": {
+      "Function.ReceiverFunc": "Information",
+      "Function.RonParserFunc": "Information",
+      "Function.RonVideoStarter": "Information",
+      //"Function.TransferOrchestrator": "Information",
+      "Function.GetLoanId": "Information",
+      "Function.GetVideo": "Information",
+      "Function.UploadVideo": "Information",
+      "Function.Upsert": "Information",
+      "Function.Requeue": "Information",
+      "Function.BatchRonVideo": "Information",
+      "Function": "Information"
+    }
+  },
+  "extensions": {
+    "queues": {
+      "batchSize": 1,
+      "maxDequeueCount": 10
+
+    }
+  }
+}
