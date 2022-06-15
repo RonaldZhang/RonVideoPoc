@@ -62,7 +62,7 @@ namespace RonVideo.Activities
                             return ex.InnerException is TimeExpiredException;
                         }
                     },
-                        vQueueItem.FileId);
+                        vQueueItem);
 
                     if (bytes.Length == 0)
                     {

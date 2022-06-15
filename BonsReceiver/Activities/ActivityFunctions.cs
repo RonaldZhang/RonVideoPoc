@@ -17,8 +17,8 @@ namespace RonVideo.Activities
         //private static readonly HttpClient client;
         public static  HttpClient client;
 
-        private static string urlLoanId = "http://localhost:8079/loanid/";
-        private static string urlGetUrl = "http://localhost:8079/url/";
+        private static string urlLoanId = Constants.BaseURL + Constants.RouteLoanId;  // "http://localhost:8079/loanid/";
+        private static string urlGetUrl = Constants.BaseURL + Constants.RouteUrl;  //  "http://localhost:8079/url/";
 
         static ActivityFunctions()
         {
@@ -30,12 +30,13 @@ namespace RonVideo.Activities
         [FunctionName(nameof(GetLoanId))]
         public static async Task<string> GetLoanId([ActivityTrigger] string blendId, ILogger log)
         {
-            var response = await client.GetAsync(urlLoanId + blendId);
+
+            var response = await client.GetAsync(urlLoanId.Replace("{id}", blendId));
             if (response.IsSuccessStatusCode)
             {
-                log.LogInformation($"Succcess in getting loan Id for {blendId}.");
+                log.LogInformation($"Succcess in getting loan Id for blend id {blendId}.");
                 var contents = await response.Content.ReadAsStringAsync();
-                var dto = JsonConvert.DeserializeObject<EmpowerLoanIdResponse>(contents);
+                var dto = JsonConvert.DeserializeObject<BlendLoanIdResponse>(contents);
                 await Task.Delay(1000);
                 return dto.LoanId;
             }
@@ -61,9 +62,13 @@ namespace RonVideo.Activities
         //    return "";
         //}
 
-        public static async Task<string> IntGetDownloadUrl(string fileId, ILogger log)
+        public static async Task<string> IntGetDownloadUrl(string closingId, string fileId, ILogger log)
         {
-            var response = await client.GetAsync(urlGetUrl + fileId);
+
+            var response = await client.GetAsync(urlGetUrl
+                .Replace("{closingId}", closingId)
+                .Replace("{fileId}",fileId));
+
             if (response.IsSuccessStatusCode)
             {
                 log.LogInformation($"Ok in {nameof(IntGetDownloadUrl)}");
@@ -95,10 +100,11 @@ namespace RonVideo.Activities
         }
 
         [FunctionName(nameof(GetVideo))]
-        public static async Task<byte[]> GetVideo([ActivityTrigger] string fileId, ILogger log)
+        public static async Task<byte[]> GetVideo([ActivityTrigger] VideoQueueItem qItem, ILogger log)
         {
-
-            var response = await IntGetDownloadUrl(fileId, log);
+            string fileId = qItem.FileId;
+            string closingId = qItem.CloseId; 
+            var response = await IntGetDownloadUrl(closingId, fileId, log);
             if (!string.IsNullOrWhiteSpace(response))
             {
                 log.LogInformation($"Success in Getting the Download URL for {fileId}.");

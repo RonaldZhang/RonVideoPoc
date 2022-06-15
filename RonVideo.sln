@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RonVideo", "BonsReceiver\Ro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareConsole", "FileShareConsole\FileShareConsole.csproj", "{3E93308C-7B9F-43DC-A50D-DF808025E03E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RonvideoTests", "RonvideoTests\RonvideoTests.csproj", "{7A5C29BC-B76A-49BC-8E08-005FF666EC4D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RonvideoTests", "RonvideoTests\RonvideoTests.csproj", "{7A5C29BC-B76A-49BC-8E08-005FF666EC4D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
