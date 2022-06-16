@@ -4,7 +4,8 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "TimerInterval": "*/5 * * * *",
-    "IS_RUNNING_LOCALLY": true
+    "IS_RUNNING_LOCALLY": true,
+    "Upload2Blob": true
   },
   "extensions": {
     "queues": {

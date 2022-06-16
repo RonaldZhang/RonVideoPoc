@@ -9,6 +9,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using RonVideo.Exceptions;
+using System.Collections.Generic;
+using Azure.Storage.Blobs;
 
 namespace RonVideo.Activities
 {
@@ -202,6 +204,23 @@ namespace RonVideo.Activities
             log.LogInformation("Upload Video Completed");
             return true;
         }
+
+
+        [FunctionName(nameof(UploadVideo2Blob))]
+        public static async Task<bool> UploadVideo2Blob([ActivityTrigger] VideoContent vc,
+            [Blob("videoblob/uploads/{data.LoanId}_{data.FileId}.mp4", FileAccess.Write)] Stream outVideo,
+            ILogger log)
+        {
+            log.LogInformation("Upload Video to Blob Started");
+   
+            string filename = vc.LoanId + "_" + vc.FileId + ".mp4";
+
+            await outVideo.WriteAsync(vc.Bytes, 0, vc.Bytes.Length);
+           
+            log.LogInformation("Upload Video to Blob Completed");
+            return true;
+        }
+
 
         [FunctionName(nameof(Upsert))]
         [return: Table("videoTable")]

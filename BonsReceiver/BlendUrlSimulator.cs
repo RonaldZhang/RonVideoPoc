@@ -28,6 +28,7 @@ namespace RonVideo
             BlendUrlResponse rep = new BlendUrlResponse();
             rep.DownloadUrl = baseURL + "?token="+closingId+"_" +fileId;
             rep.ExpiresAt = DateTime.UtcNow.AddSeconds(10).ToString("s") + "Z";
+            await Task.Delay(500);
             return new OkObjectResult(rep);
         }
 

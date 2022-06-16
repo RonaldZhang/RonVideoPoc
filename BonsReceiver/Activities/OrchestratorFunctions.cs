@@ -77,7 +77,13 @@ namespace RonVideo.Activities
                     vc.LoanId = loanId;
                     vc.FileId = vQueueItem.FileId;
                     vc.Bytes = bytes;
-                    success = await context.CallActivityAsync<bool>("UploadVideo", vc);
+
+                    bool upload2Blob = Environment.GetEnvironmentVariable("Upload2Blob") == "true";
+                    if (upload2Blob)
+                        success = await context.CallActivityAsync<bool>("UploadVideo2Blob", vc);
+                    else
+                        success = await context.CallActivityAsync<bool>("UploadVideo", vc);
+
                     status = success ? "Completed" : "Failed";
                     ss = await context.CallActivityAsync<VideoItem>("Upsert", (videoRow, vQueueItem, status));
 

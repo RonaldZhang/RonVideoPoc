@@ -26,6 +26,7 @@ namespace RonVideo
             BlendLoanIdResponse resp = new BlendLoanIdResponse();
             resp.Id = id;  
             resp.LoanId = Guid.NewGuid().ToString();
+            await Task.Delay(500);
             return new OkObjectResult(resp);
         }
     }
