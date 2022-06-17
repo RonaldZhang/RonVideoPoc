@@ -25,9 +25,10 @@ namespace BonsReceiver
 
             log.LogInformation($"BONSQueue Queue trigger processed: {JsonConvert.SerializeObject(dto)}");
 
-            List<string> fileIds = dto.Data.Fields.RecordingFiles.Select(x => x.FileId).ToList();
 
-            if ((dto.Data.Type == "closing") && (dto.Data.Action == "updated"))
+            List<string> fileIds = dto?.Data?.Fields?.RecordingFiles?.Select(x => x.FileId).ToList();
+
+            if ((dto?.Data?.Type == "closing") && (dto?.Data?.Action == "updated"))
             {
                 log.LogInformation($"RON Video Event received Closing Id: {dto.Data.Id}");
 
@@ -39,7 +40,7 @@ namespace BonsReceiver
             }
             else
             {
-                log.LogInformation($"Other Event received, Skipped.  type: {dto.Data.Type}, action:{dto.Data.Action}");
+                log.LogInformation($"Other Event received, Skipped.  type: {dto?.Data?.Type}, action:{dto?.Data?.Action}");
             }
 
         }
