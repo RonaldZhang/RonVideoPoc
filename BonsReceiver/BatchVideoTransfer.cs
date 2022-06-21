@@ -16,7 +16,7 @@ using RonVideo.Utilities;
 
 namespace RonVideo
 {
-    public class Batchvideotrasnfer
+    public class BatchVideoTransfer
     {
         [FunctionName("BatchRonVideo")]
         //public  async Task<IActionResult> BatchRonVideoStarter(

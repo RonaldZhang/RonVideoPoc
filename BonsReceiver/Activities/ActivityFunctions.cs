@@ -47,6 +47,7 @@ namespace RonVideo.Activities
             return "";
         }
 
+
         //[FunctionName(nameof(GetDownloadUrl))]
         //public static async Task<string> GetDownloadUrl([ActivityTrigger] string fileId, ILogger log)
         //{
@@ -63,7 +64,7 @@ namespace RonVideo.Activities
         //    log.LogError($"{response.StatusCode} {response.ReasonPhrase}: ");
         //    return "";
         //}
-
+        
         public static async Task<string> IntGetDownloadUrl(string closingId, string fileId, ILogger log)
         {
 

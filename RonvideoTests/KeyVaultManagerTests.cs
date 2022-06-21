@@ -1,34 +1,14 @@
-﻿using Azure;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RonVideo.Utilities
+namespace RonvideoTests
 {
-    class KeyVaultManager : IKeyVaultManager
+    public class KeyVaultManagerTests
     {
-        private readonly SecretClient _secretClient;
-
-        private string url= "https://applicationsecretsdemo.vault.azure.net/";
-        public KeyVaultManager()
-        {
-            _secretClient = new SecretClient(new Uri(url), new DefaultAzureCredential());
-        }
-
-        //public KeyVaultManager(SecretClient secretClient)
-        //{
-        //    _secretClient = secretClient;
-        //}
-        public async Task<string> GetSecret(string key)
-        {
-            KeyVaultSecret keyValueSecret = await _secretClient.GetSecretAsync(key);
-
-            return keyValueSecret.Value;
-        }
 
         //public async void Test()
         //{
@@ -88,5 +68,13 @@ namespace RonVideo.Utilities
         //        results.Add(secret.Name, result);
         //    }
         //}
+
+        [TestMethod]
+        public async void TestKV()
+        {
+            await Task.Delay(500);
+            return;
+
+        }
     }
 }
