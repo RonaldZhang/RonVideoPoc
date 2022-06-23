@@ -7,6 +7,9 @@
     "IS_RUNNING_LOCALLY": true,
     "Upload2Blob": true
   },
+  "Host": {
+    "CORS": "*"
+  },
   "extensions": {
     "queues": {
       "batchSize": 1,

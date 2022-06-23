@@ -22,7 +22,7 @@ namespace RonvideoTests
     [TestClass]
     public class VideoTransferTests
     {
-        private readonly ILogger logger = NullLoggerFactory.Instance.CreateLogger("Test");
+        private readonly ILogger logger = NullLoggerFactory.Instance.CreateLogger("VideoTransferTests");
 
         //[TestMethod]
         //public async Task RunOrchectratorTest()

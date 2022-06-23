@@ -22,6 +22,10 @@ namespace RonVideo
                 builder.Services.AddSingleton<IKeyVaultManager>((s) => {
                     return new KeyVaultManager();
                 });
+
+            builder.Services.AddSingleton<ICloudQueueManager>((s) => {
+                return new CloudQueueManager();
+            });
         }
     }
 }

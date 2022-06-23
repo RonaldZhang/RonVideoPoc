@@ -18,11 +18,14 @@ using System.Net.Http.Headers;
 using Azure.Storage.Blobs;
 using System.Collections.Generic;
 using Azure.Storage.Blobs.Models;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RonVideo
 {
+    [ExcludeFromCodeCoverage]
     public static class BlendDownloadSimulator
     {
+      
         [FunctionName("BlendSimulator")]
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = Constants.RouteDownload)] HttpRequest req,

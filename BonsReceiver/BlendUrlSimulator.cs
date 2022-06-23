@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RonVideo.Models;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RonVideo
 {
+    [ExcludeFromCodeCoverage]
     public static class BlendUrlSimulator
     {
         static string baseURL = Constants.BaseURL+ Constants.RouteDownload;

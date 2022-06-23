@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using RonVideo.Exceptions;
 using System.Collections.Generic;
 using Azure.Storage.Blobs;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RonVideo.Activities
 {
@@ -187,6 +188,7 @@ namespace RonVideo.Activities
         //    return new byte[0];
         //}
 
+        [ExcludeFromCodeCoverage]
         [FunctionName(nameof(UploadVideo))]
         public static async Task<bool> UploadVideo([ActivityTrigger] VideoContent vc, ILogger log)
         {
@@ -207,6 +209,7 @@ namespace RonVideo.Activities
         }
 
 
+        [ExcludeFromCodeCoverage]
         [FunctionName(nameof(UploadVideo2Blob))]
         public static async Task<bool> UploadVideo2Blob([ActivityTrigger] VideoContent vc,
             [Blob("videoblob/uploads/{data.LoanId}_{data.FileId}.mp4", FileAccess.Write)] Stream outVideo,
