@@ -3,18 +3,20 @@ using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace RonVideo.Utilities
 {
-    class KeyVaultManager : IKeyVaultManager
+    [ExcludeFromCodeCoverage]
+    public class NavyKVManager : IKeyVaultManager
     {
         private readonly SecretClient _secretClient;
 
         private string url= "https://applicationsecretsdemo.vault.azure.net/";
-        public KeyVaultManager()
+        public NavyKVManager()
         {
             _secretClient = new SecretClient(new Uri(url), new DefaultAzureCredential());
         }

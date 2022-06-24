@@ -26,14 +26,10 @@ namespace RonvideoTests
         [TestMethod]
         public async Task RunOrchectratorClientTest()
         {
-   
-
             var id = "8e503c5e-19de-40e1-932d-298c4263115b";
             VideoQueueItem videoQ = new VideoQueueItem("BlendId", "LoanId", "CloseId", "FileId");
-            //VideoItem vidoeR = new VideoItem("BlendId", "LoanId", "CloseId", "FileId", 1, "", "Http", "FileId");
             VideoItem video = new VideoItem("blendid", "loanId", "closeId", "fileid", 1, "Received", "http", "fileid");
             OrchestratorInput input1 = new OrchestratorInput(videoQ, video);
-
 
             var tableClientMock = new Mock<TableClient>();
             var result = GetDataAync();
@@ -44,25 +40,19 @@ namespace RonvideoTests
 
             var clientMock = new Mock<IDurableOrchestrationClient>();
             clientMock.Setup(client => client.StartNewAsync("TransferOrchestrator", It.IsAny<OrchestratorInput>())).Returns(Task.FromResult<string>(id));
-            // var request = requestMock.Object;
-            //clientMock.Setup(client => client.CreateCheckStatusResponse(request, id,false));
-
-     
 
             BatchVideoTransfer vt = new BatchVideoTransfer();
-            //VideoItem video = new VideoItem("blendid", "loanId", "closeId", "fileid", 1, "Received", "http", "fileid");
             await vt.BatchRonVideoProcessStart(tableClientMock.Object, clientMock.Object, logger);
             try
             {
-
                 clientMock.Verify(client => client.StartNewAsync("TransferOrchestrator", It.IsAny<OrchestratorInput>()));
-
             }
             catch (MockException ex)
             {
                 Assert.Fail();
             }
         }
+
 
         private AsyncPageable<VideoItem> GetDataAync()
         {
@@ -101,7 +91,7 @@ namespace RonvideoTests
                 CloseId = "closeId22",
                 FileId = "fileid22",
                 Count = 22,
-                Status = "Received22",
+                Status = "Completed",
                 PartitionKey = "http22",
                 RowKey = "fileid22"
             } }, "continuationToken2", Mock.Of<Response>());

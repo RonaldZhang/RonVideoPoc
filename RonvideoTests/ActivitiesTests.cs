@@ -8,6 +8,7 @@ using Moq;
 using Moq.Protected;
 using RichardSzalay.MockHttp;
 using RonVideo.Activities;
+using RonVideo.Exceptions;
 using RonVideo.Models;
 using RonVideo.Utilities;
 using RonvideoTests.Utilities;
@@ -67,6 +68,35 @@ namespace RonvideoTests
         }
 
         [TestMethod]
+        public async Task GetLoanIdActivityFailedTests()
+        {
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler> { CallBase = true };
+            //mockHttpMessageHandler = new Mock<MockHttpMessageHandler>( MockBehavior.Strict);
+            mockHttpMessageHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage()
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    Content = new StringContent("")
+                })
+                .Verifiable();
+            //.Callback<HttpRequestMessage>(x => this.request = x);
+            var obj = mockHttpMessageHandler.Object;
+            var client = new HttpClient(obj)
+            {
+                BaseAddress = new Uri("http://test.com/")
+            };
+            ActivityFunctions.client = client;
+
+            string resp = await ActivityFunctions.GetLoanId("blendId1", logger);
+            Assert.AreEqual("", resp);
+
+        }
+
+        [TestMethod]
         public async Task GetDownloadUrlActivityOkTests()
         {
             var mockHttpMessageHandler = new Mock<HttpMessageHandler> { CallBase = true };
@@ -92,6 +122,35 @@ namespace RonvideoTests
 
             var resp = await ActivityFunctions.IntGetDownloadUrl("blendId1","123", logger);
             Assert.AreEqual("http://abc.mysite.com/dload", resp);
+
+        }
+
+        [TestMethod]
+        public async Task GetDownloadUrlActivityFailedTests()
+        {
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler> { CallBase = true };
+            //mockHttpMessageHandler = new Mock<MockHttpMessageHandler>( MockBehavior.Strict);
+            mockHttpMessageHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage()
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    Content = new StringContent("")
+                })
+                .Verifiable();
+            //.Callback<HttpRequestMessage>(x => this.request = x);
+            var obj = mockHttpMessageHandler.Object;
+            var client = new HttpClient(obj)
+            {
+                BaseAddress = new Uri("http://test.com/")
+            };
+            ActivityFunctions.client = client;
+
+            var resp = await ActivityFunctions.IntGetDownloadUrl("blendId1", "123", logger);
+            Assert.AreEqual("", resp);
 
         }
 
@@ -147,7 +206,58 @@ namespace RonvideoTests
 
 
         [TestMethod]
-        public async Task GetVideoActivityOkTests()
+        public async Task IntGetVideoFailedTests()
+        {
+            //string txt= "This is a test";
+            byte[] bytes = new byte[0] ;
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler> { CallBase = true };
+            //mockHttpMessageHandler = new Mock<MockHttpMessageHandler>( MockBehavior.Strict);
+            mockHttpMessageHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(x => !x.RequestUri.AbsoluteUri.Contains("http://abc.mysite.com/dload")),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage()
+                {
+                    StatusCode = System.Net.HttpStatusCode.OK,
+                    Content = new StringContent("{\"downloadUrl\":\"http://abc.mysite.com/dload\",\"expiresAt\":\"ABCDEF\"}")
+
+                })
+                .Verifiable();
+            mockHttpMessageHandler.Protected()
+               .Setup<Task<HttpResponseMessage>>(
+                   "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(x => x.RequestUri.AbsoluteUri.Contains("http://abc.mysite.com/dload")),
+                   ItExpr.IsAny<CancellationToken>())
+               .ReturnsAsync(new HttpResponseMessage()
+               {
+                   StatusCode = System.Net.HttpStatusCode.BadRequest,
+                   Content = new ByteArrayContent(bytes)
+               })
+               .Verifiable();
+            //.Callback<HttpRequestMessage>(x => this.request = x);
+            var obj = mockHttpMessageHandler.Object;
+            var client = new HttpClient(obj)
+            {
+                BaseAddress = new Uri("http://test.com/")
+            };
+            ActivityFunctions.client = client;
+
+            VideoQueueItem qItem = new VideoQueueItem();
+            qItem.BlendId = "blendId1";
+            qItem.CloseId = "closeId1";
+            qItem.FileId = "fileId1";
+            qItem.LoanId = "loanId1";
+
+            var resp = await ActivityFunctions.GetVideo(qItem, logger);
+            //var res = Encoding.Default.GetBytes(txt);
+            Assert.IsTrue(bytes.SequenceEqual(resp));
+
+        }
+
+
+        [TestMethod]
+        public async Task GetVideoOkTests()
         {
             //string txt= "This is a test";
             byte[] bytes = new byte[] { 1, 2, 3, 4, 5 };
@@ -188,20 +298,98 @@ namespace RonvideoTests
 
 
         [TestMethod]
+        public async Task GetIntVideoGoneTests()
+        {
+            //string txt= "This is a test";
+            byte[] bytes = new byte[0];
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler> { CallBase = true };
+            //mockHttpMessageHandler = new Mock<MockHttpMessageHandler>( MockBehavior.Strict);
+
+            mockHttpMessageHandler.Protected()
+               .Setup<Task<HttpResponseMessage>>(
+                   "SendAsync",
+                   //ItExpr.IsAny<HttpRequestMessage>(),
+                   ItExpr.Is<HttpRequestMessage>(x => x.RequestUri.AbsoluteUri.Contains("http://abc.mysite.com/dload")),
+                   ItExpr.IsAny<CancellationToken>())
+               .ReturnsAsync(new HttpResponseMessage()
+               {
+                   StatusCode = System.Net.HttpStatusCode.Gone,
+                   Content = new ByteArrayContent(bytes)
+               })
+               .Verifiable();
+            //.Callback<HttpRequestMessage>(x => this.request = x);
+            var obj = mockHttpMessageHandler.Object;
+            var client = new HttpClient(obj)
+            {
+                BaseAddress = new Uri("http://test.com/")
+            };
+            ActivityFunctions.client = client;
+
+
+            var resp = await ActivityFunctions.IntGetVideo("http://abc.mysite.com/dload", logger);
+            Assert.IsNotNull(resp);
+            Assert.IsTrue(resp.bytes.SequenceEqual(bytes));
+            Assert.IsTrue(resp.HttpStatus==HttpStatusCode.Gone);
+           
+        }
+
+        [TestMethod]
+        public async Task GetVideoGoneTests()
+        {
+            //string txt= "This is a test";
+            byte[] bytes = new byte[0];
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler> { CallBase = true };
+            //mockHttpMessageHandler = new Mock<MockHttpMessageHandler>( MockBehavior.Strict);
+            mockHttpMessageHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(x => !x.RequestUri.AbsoluteUri.Contains("http://abc.mysite.com/dload")),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage()
+                {
+                    StatusCode = System.Net.HttpStatusCode.OK,
+                    Content = new StringContent("{\"downloadUrl\":\"http://abc.mysite.com/dload\",\"expiresAt\":\"ABCDEF\"}")
+
+                })
+                .Verifiable();
+            mockHttpMessageHandler.Protected()
+               .Setup<Task<HttpResponseMessage>>(
+                   "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(x => x.RequestUri.AbsoluteUri.Contains("http://abc.mysite.com/dload")),
+                   ItExpr.IsAny<CancellationToken>())
+               .ReturnsAsync(new HttpResponseMessage()
+               {
+                   StatusCode = System.Net.HttpStatusCode.Gone,
+                   Content = new ByteArrayContent(bytes)
+               })
+               .Verifiable();
+            //.Callback<HttpRequestMessage>(x => this.request = x);
+            var obj = mockHttpMessageHandler.Object;
+            var client = new HttpClient(obj)
+            {
+                BaseAddress = new Uri("http://test.com/")
+            };
+            ActivityFunctions.client = client;
+
+            VideoQueueItem qItem = new VideoQueueItem();
+            qItem.BlendId = "blendId1";
+            qItem.CloseId = "closeId1";
+            qItem.FileId = "fileId1";
+            qItem.LoanId = "loanId1";
+
+            //var resp = await ActivityFunctions.GetVideo(qItem, logger);
+            //var res = Encoding.Default.GetBytes(txt);
+            //Assert.IsTrue(bytes.SequenceEqual(resp));
+            await Assert.ThrowsExceptionAsync<TimeExpiredException>(async () => { var resp = await ActivityFunctions.GetVideo(qItem, logger); });
+      
+        }
+
+        [TestMethod]
         public async Task UpsertETagUpdatedTest()
         {
-            VideoRowItem videoRow = new VideoRowItem()
-            { 
-                BlendId = "BlendId1",
-                CloseId = "CloseId1",
-                Count = 3,
-                ETag = new ETag(""),
-                FileId = "FileId1",
-                LoanId = "LoanId1",
-                PartitionKey = "PartitionKey1",
-                RowKey = "RowKey1",
-                Status = "Testing"
-            };
+            VideoRowItem videoRow = new VideoRowItem("BlendId1", "LoanId1", "CloseId1", "FileId1",
+                3, "Status", "PartitionKey1", "RowKey1");
+
 
             VideoQueueItem vQueueItem = new VideoQueueItem()
             {

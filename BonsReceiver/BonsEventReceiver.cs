@@ -42,18 +42,22 @@ namespace BonsReceiver
                 return new ObjectResult(new ApiResponse(404));
             }
 
+            string responseMessage = "Event Received";
             try
             {
                 if (!string.IsNullOrWhiteSpace(data))
                     outputQueueItem.Add(data);
-                else 
+                else
+                {
                     log.LogInformation("No payload was found in the event. skipped!");
+                    responseMessage = "No Event Received";
+                }
             }
             catch (Exception ex)
             {
                 return new ObjectResult(new ApiResponse(500));
             }
-            string responseMessage = "Event Received";
+            
             return new OkObjectResult(responseMessage);
         }
     }

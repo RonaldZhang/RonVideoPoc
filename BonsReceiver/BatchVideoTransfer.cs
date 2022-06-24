@@ -67,7 +67,7 @@ namespace RonVideo
                     if ( videoRow.Status.Equals("Completed"))
                     //Already processed completely
                     {
-                        await Task.Delay(5000);
+                        await Task.Delay(500);
                         log.LogInformation($"Alredy Processed. Skip the File : {myQueueItem.FileId}");
                         continue;
                     }
@@ -88,7 +88,7 @@ namespace RonVideo
 
                 string status = string.IsNullOrWhiteSpace(success) ? "Failed" : "Completed";
 
-                await Task.Delay(5000);
+                await Task.Delay(500);
                 log.LogInformation($"Video Queue processed: {JsonConvert.SerializeObject(myQueueItem)}");
             }
             return;

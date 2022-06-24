@@ -21,9 +21,18 @@ namespace BonsReceiver
             log.LogInformation("In RON Event Parser: " +  Helper.GetEnvironmentVariable("AzureWebJobsStorage"));
             log.LogInformation($"BONSQueue triggered: {myQueueItem}");
 
-            var dto = JsonConvert.DeserializeObject<Event>(myQueueItem);
+            Event dto = null;
+            try
+            {
+                 dto = JsonConvert.DeserializeObject<Event>(myQueueItem);
+            }
+            catch
+            {
+                log.LogInformation(" Unexpected Payload received, Skipped");
+            }
 
-            log.LogInformation($"BONSQueue Queue trigger processed: {JsonConvert.SerializeObject(dto)}");
+            if (dto != null)
+                    log.LogInformation($"BONSQueue Queue trigger processed: {JsonConvert.SerializeObject(dto)}");
 
 
             List<string> fileIds = dto?.Data?.Fields?.RecordingFiles?.Select(x => x.FileId).ToList();
@@ -38,11 +47,14 @@ namespace BonsReceiver
                     outputQueueItem.Add(JsonConvert.SerializeObject(new VideoQueueItem(dto.Id, string.Empty, dto.Data.Id, x)));
                 });
             }
-            else
+            else if (dto!=null)
             {
                 log.LogInformation($"Other Event received, Skipped.  type: {dto?.Data?.Type}, action:{dto?.Data?.Action}");
             }
-
+            else
+            {
+                log.LogInformation("Invalid payload received Event received, Skipped.");
+            }
         }
     }
 }

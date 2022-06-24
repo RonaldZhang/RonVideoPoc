@@ -45,6 +45,40 @@ namespace RonvideoTests
             Assert.AreEqual("", abc.LoanId);
         }
 
+        [TestMethod]
+        public void RonEventParserSkippedEvent()
+        {
+            string currentDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            string msg = File.ReadAllText(currentDirectory + @"\data\otherevent.json");
+            // Mock<HttpRequest> mockRequest = CreateMockRequest(payload);
+
+            //Mock<ICollector<string>> outputQueueItem = MockHelper.CreateMockCollector();
+            MockCollector<string> outputQueueItem = new MockCollector<string>();
+            IKeyVaultManager kvm = new LocalKVManager();
+            var func = new RonEventParser();// BonsEventReceiver(kvm);
+            func.Run(msg, outputQueueItem, new Mock<ILogger>().Object);
+
+            Assert.IsNotNull(outputQueueItem);
+            Assert.IsTrue(outputQueueItem.Items.Count == 0);
+        }
+
+        [TestMethod]
+        public void RonEventParserInvliadPayloadEvent()
+        {
+            string currentDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            string msg = "Somthing else";//  File.ReadAllText(currentDirectory + @"\data\event.json");
+            // Mock<HttpRequest> mockRequest = CreateMockRequest(payload);
+
+            //Mock<ICollector<string>> outputQueueItem = MockHelper.CreateMockCollector();
+            MockCollector<string> outputQueueItem = new MockCollector<string>();
+            IKeyVaultManager kvm = new LocalKVManager();
+            var func = new RonEventParser();// BonsEventReceiver(kvm);
+            func.Run(msg, outputQueueItem, new Mock<ILogger>().Object);
+
+            Assert.IsNotNull(outputQueueItem);
+            Assert.IsTrue(outputQueueItem.Items.Count == 0);
+        }
+
         //[TestMethod]
         //public void Recieve_Queue_And_Emit_To_Table()
         //{

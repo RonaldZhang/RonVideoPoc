@@ -62,6 +62,21 @@ namespace RonvideoTests
 
         }
 
+        [TestMethod]
+        public async Task BonEventReceiverNoData()
+        {
+            string payload = "";
+            Mock<HttpRequest> mockRequest = MockHelper.CreateMockRequest(payload);
+
+            Mock<ICollector<string>> outputQueueItem = MockHelper.CreateMockCollector();
+            IKeyVaultManager kvm = new LocalKVManager();
+            var func = new BonsEventReceiver(kvm);
+            var result = await func.Run(mockRequest.Object, outputQueueItem.Object, new Mock<ILogger>().Object) as OkObjectResult;
+            Assert.IsNotNull(result);
+            Assert.AreEqual("No Event Received", result.Value);
+
+        }
+
 
     }
 

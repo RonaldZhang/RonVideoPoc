@@ -25,10 +25,10 @@ namespace RonVideo.Activities
 
             string status = await internalCall(context);
 
-            if (status != "Completed")
-            {
-                string bb = await context.CallActivityAsync<string>("Requeue", vQueueItem);
-            }
+            //if (status != "Completed")
+            //{
+            //    string bb = await context.CallActivityAsync<string>("Requeue", vQueueItem);
+            //}
             return true;
         }
 
@@ -44,7 +44,7 @@ namespace RonVideo.Activities
             {
                 try
                 {
-                   
+
                     var loanId = await context.CallActivityAsync<string>("GetLoanId", vQueueItem.BlendId);
                     if (string.IsNullOrWhiteSpace(loanId))
                     {
@@ -54,14 +54,11 @@ namespace RonVideo.Activities
                     }
 
                     //var bytes = await context.CallActivityAsync<byte[]>("GetVideo", vQueueItem.FileId);
-                    var bytes = await context.CallActivityWithRetryAsync<byte[]>("GetVideo", 
-                        new RetryOptions(TimeSpan.FromSeconds(5), 4) { Handle=ex=>
+                    var bytes = await context.CallActivityWithRetryAsync<byte[]>("GetVideo",
+                        new RetryOptions(TimeSpan.FromSeconds(5), 4)
                         {
-                            if (ex.InnerException is null)
-                                return false;
-                            return ex.InnerException is TimeExpiredException;
-                        }
-                    },
+                            Handle = TimexpiredExceptionHandler()
+                        },
                         vQueueItem);
 
                     if (bytes.Length == 0)
@@ -71,12 +68,12 @@ namespace RonVideo.Activities
                         return "failed";
                     }
 
-                    VideoContent vc = new VideoContent();
-                    vc.BlendId = vQueueItem.BlendId;
-                    vc.CloseId = vQueueItem.CloseId;
-                    vc.LoanId = loanId;
-                    vc.FileId = vQueueItem.FileId;
-                    vc.Bytes = bytes;
+                    VideoContent vc = new VideoContent(vQueueItem.BlendId, loanId, vQueueItem.CloseId, vQueueItem.FileId, bytes);
+                    //vc.BlendId = vQueueItem.BlendId;
+                    //vc.CloseId = vQueueItem.CloseId;
+                    //vc.LoanId = loanId;
+                    //vc.FileId = vQueueItem.FileId;
+                    //vc.Bytes = bytes;
 
                     bool upload2Blob = Environment.GetEnvironmentVariable("Upload2Blob") == "true";
                     if (upload2Blob)
@@ -105,6 +102,16 @@ namespace RonVideo.Activities
             finally { }
 
             return status;
+        }
+
+        public static Func<Exception, bool> TimexpiredExceptionHandler()
+        {
+            return ex =>
+            {
+                if (ex.InnerException is null)
+                    return false;
+                return ex.InnerException is TimeExpiredException;
+            };
         }
     }
 }

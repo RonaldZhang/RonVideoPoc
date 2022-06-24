@@ -40,7 +40,7 @@ namespace RonVideo.Activities
                 log.LogInformation($"Succcess in getting loan Id for blend id {blendId}.");
                 var contents = await response.Content.ReadAsStringAsync();
                 var dto = JsonConvert.DeserializeObject<BlendLoanIdResponse>(contents);
-                await Task.Delay(1000);
+                await Task.Delay(100);
                 return dto.LoanId;
             }
 
@@ -78,7 +78,7 @@ namespace RonVideo.Activities
                 log.LogInformation($"Ok in {nameof(IntGetDownloadUrl)}");
                 var contents = await response.Content.ReadAsStringAsync();
                 var dto = JsonConvert.DeserializeObject<BlendUrlResponse>(contents);
-                await Task.Delay(1000);
+                await Task.Delay(100);
                 return dto.DownloadUrl;
             }
 
@@ -94,7 +94,7 @@ namespace RonVideo.Activities
             {
                 log.LogInformation($"Ok in {nameof(GetVideo)}");
                 var contents = await response.Content.ReadAsByteArrayAsync();
-                await Task.Delay(1000);
+                await Task.Delay(100);
 
                 return new GetVideoResult(response.StatusCode, contents);
             }
@@ -135,58 +135,6 @@ namespace RonVideo.Activities
             
             return new byte[0];
         }
-
-        //[FunctionName(nameof(GetVideo))]
-        //public static async Task<byte[]> GetVideo([ActivityTrigger] string fileId, ILogger log)
-        //{
-        //    int retry = 3;
-
-        //    while (retry > 0)
-        //    {
-        //        var response = await IntGetDownloadUrl(fileId, log);
-        //        if (!string.IsNullOrWhiteSpace(response))
-        //        {
-        //            log.LogInformation($"Success in Getting the Download URL for {fileId}.");
-        //            var contents = await IntGetVideo(response, log);
-
-        //            if (contents.HttpStatus == HttpStatusCode.OK)
-        //                return contents.bytes;
-        //            else if (contents.HttpStatus == HttpStatusCode.Gone)
-        //            {
-        //                retry--;
-        //                log.LogWarning($"Expired : Getting Binary Content for {fileId}. Retry remained {retry} ");
-
-        //            }
-        //            else
-        //            {
-        //                log.LogError($"Error {contents.HttpStatus} in Getting the Download URL for {fileId}.");
-        //                retry = 0;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            log.LogError($"Error in Getting the Download URL for {fileId}.");
-        //        }
-        //    }
-        //    return new byte[0];
-        //}
-
-        //[FunctionName(nameof(GetVideo))]
-        //public static async Task<byte[]> GetVideo([ActivityTrigger] string url, ILogger log)
-        //{
-        //    log.LogInformation("Download URL " + url);
-        //    var response = await client.GetAsync(url);
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        log.LogInformation($"Ok in {nameof(GetVideo)}");
-        //        var contents = await response.Content.ReadAsByteArrayAsync();
-        //        await Task.Delay(1000);
-        //        return contents;
-        //    }
-
-        //    log.LogError($"{response.StatusCode} {response.ReasonPhrase}: ");
-        //    return new byte[0];
-        //}
 
         [ExcludeFromCodeCoverage]
         [FunctionName(nameof(UploadVideo))]
@@ -251,15 +199,15 @@ namespace RonVideo.Activities
             }
         }
 
-        //Requeue
-        [FunctionName(nameof(Requeue))]
-        public static async Task<string> Requeue([ActivityTrigger] VideoQueueItem vq,
-            [Queue("videobatchqueue")] ICollector<string> outputQueueItem,
-            ILogger log)
-        { 
-            log.LogInformation($"Requeue {vq}");
-            //outputQueueItem.Add(JsonConvert.SerializeObject(vq));
-            return "success";
-        }
+        ////Requeue
+        //[FunctionName(nameof(Requeue))]
+        //public static async Task<string> Requeue([ActivityTrigger] VideoQueueItem vq,
+        //    [Queue("videobatchqueue")] ICollector<string> outputQueueItem,
+        //    ILogger log)
+        //{ 
+        //    log.LogInformation($"Requeue {vq}");
+        //    //outputQueueItem.Add(JsonConvert.SerializeObject(vq));
+        //    return "success";
+        //}
     }
 }

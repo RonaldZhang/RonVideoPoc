@@ -20,7 +20,7 @@ namespace RonVideo
                 });
             else
                 builder.Services.AddSingleton<IKeyVaultManager>((s) => {
-                    return new KeyVaultManager();
+                    return new NavyKVManager();
                 });
 
             builder.Services.AddSingleton<ICloudQueueManager>((s) => {

@@ -2,10 +2,12 @@
 using Microsoft.Azure.Storage.Queue;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace RonVideo.Utilities
 {
+    [ExcludeFromCodeCoverage]
     public class CloudQueueManager: ICloudQueueManager
     {
         public  ICloudQueueWrapper GetCloudQueueRef(string storageAccountString, string queuename)

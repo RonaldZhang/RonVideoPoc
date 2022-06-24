@@ -48,28 +48,67 @@ namespace RonvideoTests
         public async Task RunOrchectratorClientTest()
         {
             var clientMock = new Mock<IDurableOrchestrationClient>();
-            //contextMock.Setup(x => x.GetInput<OrchestratorInput>()).Returns(input1);
-            // https://github.com/Azure/azure-functions-durable-extension/blob/0345b369ffa1745c24ffbacfaf8a43fb62dd2572/src/WebJobs.Extensions.DurableTask/DurableOrchestrationClient.cs#L46
-            //var requestMock = new Mock<HttpRequestMessage>();
+
             var id = "8e503c5e-19de-40e1-932d-298c4263115b";
             VideoQueueItem videoQ = new VideoQueueItem("BlendId", "LoanId", "CloseId", "FileId");
-            //VideoItem vidoeR = new VideoItem("BlendId", "LoanId", "CloseId", "FileId", 1, "", "Http", "FileId");
+           
             VideoItem video = new VideoItem("blendid", "loanId", "closeId", "fileid", 1, "Received", "http", "fileid");
             OrchestratorInput input1 = new OrchestratorInput(videoQ, video);
 
             clientMock.Setup(client => client.StartNewAsync("TransferOrchestrator",It.IsAny<OrchestratorInput>())).Returns(Task.FromResult<string>(id));
-            // var request = requestMock.Object;
-            //clientMock.Setup(client => client.CreateCheckStatusResponse(request, id,false));
-
-
             VideoTransfer vt=new VideoTransfer();
-            //VideoItem video = new VideoItem("blendid", "loanId", "closeId", "fileid", 1, "Received", "http", "fileid");
             vt.RonVideoStarter(videoQ, video, clientMock.Object, logger);
             try
             {
-
                 clientMock.Verify(client => client.StartNewAsync("TransferOrchestrator", It.IsAny<OrchestratorInput>()));
+            }
+            catch (MockException ex)
+            {
+                Assert.Fail();
+            }
+        }
 
+        [TestMethod]
+        public async Task RunOrchectratorCompletedRowTest()
+        {
+            var clientMock = new Mock<IDurableOrchestrationClient>();
+
+            var id = "8e503c5e-19de-40e1-932d-298c4263115b";
+            VideoQueueItem videoQ = new VideoQueueItem("BlendId", "LoanId", "CloseId", "FileId");
+
+            VideoItem video = new VideoItem("blendid", "loanId", "closeId", "fileid", 1, "Completed", "http", "fileid");
+            OrchestratorInput input1 = new OrchestratorInput(videoQ, video);
+
+            clientMock.Setup(client => client.StartNewAsync("TransferOrchestrator", It.IsAny<OrchestratorInput>())).Returns(Task.FromResult<string>(id));
+            VideoTransfer vt = new VideoTransfer();
+            vt.RonVideoStarter(videoQ, video, clientMock.Object, logger);
+            try
+            {
+                ;// clientMock.Verify(client => client.StartNewAsync("TransferOrchestrator", It.IsAny<OrchestratorInput>()));
+            }
+            catch (MockException ex)
+            {
+                Assert.Fail();
+            }
+        }
+
+        [TestMethod]
+        public async Task RunOrchectratorEmptyRowTest()
+        {
+            var clientMock = new Mock<IDurableOrchestrationClient>();
+
+            var id = "8e503c5e-19de-40e1-932d-298c4263115b";
+            VideoQueueItem videoQ = new VideoQueueItem("BlendId", "LoanId", "CloseId", "FileId");
+
+            VideoItem video =null;
+            OrchestratorInput input1 = new OrchestratorInput(videoQ, video);
+
+            clientMock.Setup(client => client.StartNewAsync("TransferOrchestrator", It.IsAny<OrchestratorInput>())).Returns(Task.FromResult<string>(id));
+            VideoTransfer vt = new VideoTransfer();
+            vt.RonVideoStarter(videoQ, video, clientMock.Object, logger);
+            try
+            {
+                ;// clientMock.Verify(client => client.StartNewAsync("TransferOrchestrator", It.IsAny<OrchestratorInput>()));
             }
             catch (MockException ex)
             {
