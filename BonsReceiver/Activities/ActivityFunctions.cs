@@ -12,6 +12,7 @@ using RonVideo.Exceptions;
 using System.Collections.Generic;
 using Azure.Storage.Blobs;
 using System.Diagnostics.CodeAnalysis;
+using RonVideo.Utilities;
 
 namespace RonVideo.Activities
 {

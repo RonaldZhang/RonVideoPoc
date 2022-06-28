@@ -19,8 +19,9 @@ using Azure.Storage.Blobs;
 using System.Collections.Generic;
 using Azure.Storage.Blobs.Models;
 using System.Diagnostics.CodeAnalysis;
+using RonVideo.Utilities;
 
-namespace RonVideo
+namespace RonVideo.Simulators
 {
     [ExcludeFromCodeCoverage]
     public static class BlendDownloadSimulator

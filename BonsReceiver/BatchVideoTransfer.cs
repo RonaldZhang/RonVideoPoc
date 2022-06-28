@@ -18,6 +18,8 @@ namespace RonVideo
 {
     public class BatchVideoTransfer
     {
+        private RonLoggerObject setting = null;
+
         [FunctionName("BatchRonVideo")]
         //public  async Task<IActionResult> BatchRonVideoStarter(
         public async void BatchRonVideoStarter(
@@ -27,10 +29,7 @@ namespace RonVideo
             [DurableClient] IDurableOrchestrationClient starter,
             ILogger log)
         {
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
             await BatchRonVideoProcessStart(tableClient, starter, log);
-            string responseMessage = "Event Received";
-            // return new OkObjectResult(responseMessage);
         }
 
         public async Task BatchRonVideoProcessStart(
@@ -38,45 +37,37 @@ namespace RonVideo
         IDurableOrchestrationClient starter,
         ILogger log)
         {
-            log.LogInformation($"Video Records process started");
-            log.LogInformation(Helper.GetEnvironmentVariable("AzureWebJobsStorage"));
+            //log.LogInformation($"Video Records process started");
+            //log.LogInformation(Helper.GetEnvironmentVariable("AzureWebJobsStorage"));
+            setting = CreateRonLoggerObject();
+            setting.LogInfomration(log, RonEventId.BatchVideoTransferTriggered, $"Batch Timer trigger executed at: {DateTime.Now}");
 
-            //AsyncPageable<VideoItem> queryResults = tableClient.QueryAsync<VideoItem>(filter: $"PartitionKey eq 'Http' and Status neq 'Completed' ");
             AsyncPageable<VideoItem> queryResults = tableClient.QueryAsync<VideoItem>(ent=>ent.Status!="Completed");
             await foreach (VideoItem entity in queryResults)
             {
-                log.LogInformation($"{entity.PartitionKey}\t{entity.RowKey}\t{entity.Timestamp}\t{entity.FileId}\t{entity.Status}");
-                VideoItem videoRow = entity;
-                VideoQueueItem myQueueItem = new VideoQueueItem(entity.BlendId, entity.LoanId, entity.CloseId, entity.FileId);
-                VideoQueueItem dto = new VideoQueueItem(entity.BlendId, entity.LoanId, entity.CloseId, entity.FileId);
-                VideoQueueItem video = new VideoQueueItem(entity.BlendId, entity.LoanId, entity.CloseId, entity.FileId);
+                setting = UpdateRonLoggerObject(setting, entity);
+                setting.LogInfomration(log, RonEventId.BatchVideoTransferFileStarted, $"{entity.PartitionKey}\t{entity.RowKey}\t{entity.Timestamp}\t{entity.FileId}\t{entity.Status}");
 
-                VideoItem vidoeR = null;
-                if (videoRow != null)
-                    vidoeR = new VideoItem(videoRow.BlendId, videoRow.LoanId, videoRow.CloseId, videoRow.FileId, videoRow.Count, videoRow.Status, videoRow.PartitionKey, videoRow.RowKey);
-                OrchestratorInput input1 = new OrchestratorInput(video, vidoeR);
-                //await starter.StartNewAsync("TransferOrchestrator",v);
-
+                OrchestratorInput input1=prepareOrchestratorInput(entity);
                 string success = "";
-
                 //Loook up the record
-                if (videoRow != null)
+                if (input1.vr != null)
                 {
                     //log.LogInformation($"Table Record found with {myQueueItem.FileId}: {JsonConvert.SerializeObject(videoRow)}");
                     //Existing record
-                    if ( videoRow.Status.Equals("Completed"))
+                    if (input1.vr.Status.Equals("Completed"))
                     //Already processed completely
                     {
-                        await Task.Delay(500);
-                        log.LogInformation($"Alredy Processed. Skip the File : {myQueueItem.FileId}");
+                        await Task.Delay(10);
+                        setting.LogInfomration(log, RonEventId.BatchVideoTransferFileStarted, $"Alredy Processed. Please chekc the Query. Skip the File : {input1.vq.FileId}");
                         continue;
                     }
                     else
                     {
-                        //Tried last time, need to rransfer again
-                        log.LogInformation($"Reprocessing : {myQueueItem.FileId}");
+                        //Tried last time, need to transfer again
+                        log.LogInformation($"Reprocessing : {input1.vq.FileId}");
+                        setting.LogInfomration(log, RonEventId.BatchVideoTransferFileProcessing, $"Reprocessing : {input1.vq.FileId}");
                         success = await starter.StartNewAsync("TransferOrchestrator", input1);
-                        //success= await _processing.ProcessFlow(input1, starter);
                     }
                 }
                 //else
@@ -88,10 +79,52 @@ namespace RonVideo
 
                 string status = string.IsNullOrWhiteSpace(success) ? "Failed" : "Completed";
 
-                await Task.Delay(500);
-                log.LogInformation($"Video Queue processed: {JsonConvert.SerializeObject(myQueueItem)}");
+                await Task.Delay(10);
+                setting.LogInfomration(log, RonEventId.BatchVideoTransferFileProcessed, $"Video Queue processed: {JsonConvert.SerializeObject(input1.vq)}");
             }
             return;
+        }
+
+        private static OrchestratorInput prepareOrchestratorInput(VideoItem entity)
+        {
+            //videoRow = entity;
+            VideoQueueItem myQueueItem = new VideoQueueItem(entity.BlendId, entity.LoanId, entity.CloseId, entity.FileId);
+            VideoQueueItem dto = myQueueItem.ShallowCopy(); // new VideoQueueItem(entity.BlendId, entity.LoanId, entity.CloseId, entity.FileId);
+
+            VideoQueueItem queue = dto.ShallowCopy(); // new VideoQueueItem(entity.BlendId, entity.LoanId, entity.CloseId, entity.FileId);
+            VideoItem item = entity.ShallowCopy();
+            OrchestratorInput input1 = new OrchestratorInput(queue, item);
+
+            return input1;
+        }
+
+        private static RonLoggerObject CreateRonLoggerObject()
+        {
+            return new RonLoggerObject()
+            {
+                Id = RonEventId.BatchVideoTransferTriggered,
+                EntityType = EntityType.BatchVidoeTransfer.ToString(),
+                BonsEventId = "",
+                CloseId = "",
+                BlendId = "",
+                FileId = "",
+                LoanId = "",
+                Status = ""
+            };
+        }
+
+        private static RonLoggerObject UpdateRonLoggerObject(RonLoggerObject obj, VideoItem entity)
+        {
+            if ((entity != null)  &&( obj!=null))
+            {
+                obj.BlendId = entity.BlendId;
+                obj.BonsEventId = entity.BlendId;
+                obj.CloseId = entity.CloseId;
+                obj.FileId = entity.FileId;
+                obj.LoanId = entity.LoanId;
+            }
+
+            return obj;
         }
     }
 

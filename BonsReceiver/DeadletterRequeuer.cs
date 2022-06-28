@@ -23,6 +23,7 @@ namespace RonVideo
     public class DeadletterRequeuer
     {
         private readonly ICloudQueueManager _cqManager;
+        private RonLoggerObject setting = null;
 
         public DeadletterRequeuer(ICloudQueueManager cqm)
         {
@@ -35,10 +36,13 @@ namespace RonVideo
             string queueName,
             ILogger log)
         {
-            log.LogInformation("Reprocessing Deadletters Triggered");
+
+            setting = CreateRonLoggerObject();
+            setting.LogInfomration(log, RonEventId.DeadletterRequeueTriggered, "Reprocessing Deadletters Triggered");
+
 
             // Get the connection string from app settings
-             string connectionString = "UseDevelopmentStorage=true";
+            string connectionString = "UseDevelopmentStorage=true";
 
             // string queuename = "bonsqueue";
             ICloudQueueWrapper targetqueue = _cqManager.GetCloudQueueRef(connectionString, queueName);
@@ -53,31 +57,55 @@ namespace RonVideo
                     msg = await poisonqueue.GetMessageAsync();
                     if (msg == null)
                         break;
-                    log.LogInformation("Poisoned Message" + msg.Id);
+                    setting = UpdateRonLoggerObject(setting, msg);
+                    setting.LogInfomration(log, RonEventId.DeadletterRequeueFileStarted, "Poisoned Message" + msg.Id);
+
+
                     string id = msg.Id;
                     string popReceipt = msg.PopReceipt;
                     await targetqueue.AddMessageAsync(msg);
-                    log.LogInformation( $"Add Poisoned Message to Queue {id}");
+                    setting = UpdateRonLoggerObject(setting, msg);
+                    setting.LogInfomration(log, RonEventId.DeadletterRequeueProcessing, $"Add Poisoned Message to Queue {id}");
+
                     await poisonqueue.DeleteMessageAsync(id, popReceipt);
-                    log.LogInformation($" Delete Poisoned Message to Queue {id}");
+                    setting.LogInfomration(log, RonEventId.DeadletterRequeueProcessing, $"Delete Poisoned Message to Queue {id}");
                     count++;
                 }
                 catch (Exception ex)
                 {
-                    log.LogInformation("Exception in Requeuing Poisoned Message " + ex.Message);
+                    setting.LogInfomration(log, RonEventId.DeadletterRequeueFailed, $"Exception in Requeuing Poisoned Message {ex.Message}");
+          
                 }
             }
 
             return new OkObjectResult($"Reprocessed {count} messages from the {poisonqueue.Name} queue.");
         }
 
-    //    private static CloudQueue GetCloudQueueRef(string storageAccountString, string queuename)
-    //    {
-    //        CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageAccountString);
-    //        CloudQueueClient queueClient = storageAccount.CreateCloudQueueClient();
-    //        CloudQueue queue = queueClient.GetQueueReference(queuename);
+        private static RonLoggerObject UpdateRonLoggerObject(RonLoggerObject obj, CloudQueueMessage entity)
+        {
+            if ((entity != null) && (obj != null))
+            {
+                obj.BlendId = entity.Id;
+            }
 
-    //        return queue;
-    //    }
+            return obj;
+        }
+
+        private static RonLoggerObject CreateRonLoggerObject()
+        {
+            return new RonLoggerObject()
+            {
+                Id = RonEventId.BonEventTriggerred,
+                EntityType = EntityType.DeadletterRequeuer.ToString(),
+                BonsEventId = "",
+                CloseId = "",
+                BlendId = "",
+                FileId = "",
+                LoanId = "",
+                Status = ""
+            };
+        }
+
+     
     }
 }

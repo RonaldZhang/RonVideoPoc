@@ -40,6 +40,12 @@ namespace RonVideo.Models
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get ; set ; }
         public ETag ETag { get; set; }
+
+        public VideoItem ShallowCopy()
+        {
+            return (VideoItem)this.MemberwiseClone();
+        }
+
         //public void ReadEntity(IDictionary<string, EntityProperty> properties, OperationContext operationContext)
         //{
         //    throw new NotImplementedException();

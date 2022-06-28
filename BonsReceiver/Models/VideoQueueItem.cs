@@ -23,5 +23,10 @@ namespace RonVideo.Models
         public String CloseId { get; set; }
         public String FileId { get; set; }
 
+        public VideoQueueItem ShallowCopy()
+        {
+            return (VideoQueueItem)this.MemberwiseClone();
+        }
+
     }
 }

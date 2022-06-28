@@ -8,7 +8,9 @@
     "Upload2Blob": true
   },
   "Host": {
-    "CORS": "*"
+    "LocalHttpPort": 7071,
+    "CORS": "*",
+    "CORSCredentials": false
   },
   "extensions": {
     "queues": {

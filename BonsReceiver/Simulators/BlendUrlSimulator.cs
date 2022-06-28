@@ -9,8 +9,9 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RonVideo.Models;
 using System.Diagnostics.CodeAnalysis;
+using RonVideo.Utilities;
 
-namespace RonVideo
+namespace RonVideo.Simulators
 {
     [ExcludeFromCodeCoverage]
     public static class BlendUrlSimulator

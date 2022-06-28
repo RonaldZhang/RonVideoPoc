@@ -14,11 +14,14 @@ namespace BonsReceiver
 {
     public  class BonsEventReceiver
     {
+
+        private RonLoggerObject setting = null;
         private  readonly IKeyVaultManager _kvManager;
 
         public BonsEventReceiver(IKeyVaultManager kvm)
         {
             _kvManager = kvm;
+            setting = CreateRonLoggerObject();
         }
         [FunctionName("ReceiverFunc")]
         public  async Task<IActionResult> Run(
@@ -26,30 +29,21 @@ namespace BonsReceiver
             [Queue("bonsqueue")] ICollector<string> outputQueueItem,
             ILogger log)
         {
-            log.LogInformation("In BONS Event Recevier: " + Helper.GetEnvironmentVariable("AzureWebJobsStorage"));
-            log.LogInformation("HTTP trigger function processed a request.");
-            string data = string.Empty;
-            try
-            {
-                string value = await _kvManager.GetSecret("MyName");
-                log.LogInformation("My Secret is " + value);
-                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                data = JsonConvert.DeserializeObject(requestBody).ToString();
-                log.LogInformation($"Body: {data}");
-            }
-            catch (Exception ex)
-            {
-                return new ObjectResult(new ApiResponse(404));
-            }
+            setting.LogInfomration(log, RonEventId.BonEventTriggerred, "{req}");
 
             string responseMessage = "Event Received";
             try
             {
+                string data = await String2Object(req);
+
                 if (!string.IsNullOrWhiteSpace(data))
+                {
                     outputQueueItem.Add(data);
+                    setting.LogInfomration(log, RonEventId.BonEventReceived, "Successful");
+                }
                 else
                 {
-                    log.LogInformation("No payload was found in the event. skipped!");
+                    setting.LogError(log, RonEventId.BonEventNoData, "No payload was found in the event. skipped!");
                     responseMessage = "No Event Received";
                 }
             }
@@ -57,8 +51,32 @@ namespace BonsReceiver
             {
                 return new ObjectResult(new ApiResponse(500));
             }
-            
+
             return new OkObjectResult(responseMessage);
+        }
+
+        private async Task<string> String2Object(HttpRequest req)
+        {
+            string data = string.Empty;
+            string value = await _kvManager.GetSecret("MyName");
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            data = JsonConvert.DeserializeObject(requestBody).ToString();
+            return data;
+        }
+
+        private static RonLoggerObject CreateRonLoggerObject()
+        {
+            return new RonLoggerObject()
+            {
+                Id=RonEventId.BonEventTriggerred,
+                EntityType = EntityType.EventReceiver.ToString(),
+                BonsEventId = "",
+                CloseId = "",
+                BlendId = "",
+                FileId = "",
+                LoanId = "",
+                Status = ""
+            };
         }
     }
 }

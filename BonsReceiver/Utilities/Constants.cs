@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RonVideo
+namespace RonVideo.Utilities
 {
     public static class Constants
     {
