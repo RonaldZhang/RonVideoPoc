@@ -38,14 +38,14 @@ namespace RonVideo.Activities
             var response = await client.GetAsync(urlLoanId.Replace("{id}", blendId));
             if (response.IsSuccessStatusCode)
             {
-                log.LogInformation($"Succcess in getting loan Id for blend id {blendId}.");
+                log.LogDebug($"Succcess in getting loan Id for blendId: {blendId}.");
                 var contents = await response.Content.ReadAsStringAsync();
                 var dto = JsonConvert.DeserializeObject<BlendLoanIdResponse>(contents);
                 await Task.Delay(100);
                 return dto.LoanId;
             }
 
-            log.LogError($"{response.StatusCode} {response.ReasonPhrase}: ");
+            log.LogError($"GetLoanId Error. blend Id: {blendId} resp status:{response.StatusCode} reason: {response.ReasonPhrase} ");
             return "";
         }
 
@@ -58,31 +58,31 @@ namespace RonVideo.Activities
 
             if (response.IsSuccessStatusCode)
             {
-                log.LogInformation($"Ok in {nameof(IntGetDownloadUrl)}");
+                log.LogDebug($"Ok in Getting the Url for closingId: {closingId} fileId: {fileId}");
                 var contents = await response.Content.ReadAsStringAsync();
                 var dto = JsonConvert.DeserializeObject<BlendUrlResponse>(contents);
                 await Task.Delay(100);
                 return dto.DownloadUrl;
             }
 
-            log.LogError($"{response.StatusCode} {response.ReasonPhrase}: ");
+            log.LogError($"Get Url Error. closingId: {closingId} fileId: {fileId} resp status: {response.StatusCode} reason: {response.ReasonPhrase} ");
             return "";
         }
 
         public static async Task<GetVideoResult> IntGetVideo(string url, ILogger log)
         {
-            log.LogInformation("Download URL " + url);
+            log.LogDebug($"Inside the GetVideo. The download Url: {url}");
             var response = await client.GetAsync(url);
             if (response.IsSuccessStatusCode)
             {
-                log.LogInformation($"Ok in {nameof(GetVideo)}");
+                log.LogDebug($"Ok in Getting the Video from {url}");
                 var contents = await response.Content.ReadAsByteArrayAsync();
                 await Task.Delay(100);
 
                 return new GetVideoResult(response.StatusCode, contents);
             }
 
-            log.LogError($"{response.StatusCode} {response.ReasonPhrase}: ");
+            log.LogError($"Get Video Error from {url} resp status: {response.StatusCode} reason: {response.ReasonPhrase}");
             return new GetVideoResult(response.StatusCode, new byte[0]);
         }
 
@@ -94,26 +94,24 @@ namespace RonVideo.Activities
             var response = await IntGetDownloadUrl(closingId, fileId, log);
             if (!string.IsNullOrWhiteSpace(response))
             {
-                log.LogInformation($"Success in Getting the Download URL for {fileId}.");
+                log.LogDebug($"Getting a non-empty download Url for closingId: {closingId} fileId: {fileId}");
                 var contents = await IntGetVideo(response, log);
 
                 if (contents.HttpStatus == HttpStatusCode.OK)
                     return contents.bytes;
                 else if (contents.HttpStatus == HttpStatusCode.Gone)
                 {
-                    
-                    log.LogWarning($"Expired {contents.HttpStatus} in Getting the Download URL for {fileId}");
-                    throw new TimeExpiredException();
-                        
+                    log.LogWarning($"Expired {contents.HttpStatus} in Getting the Download URL for closingId: {closingId} fileId: {fileId}");
+                    throw new TimeExpiredException();          
                 }
                 else
                 {
-                    log.LogError($"Error {contents.HttpStatus} in Getting the Download URL for {fileId}.");
+                    log.LogError($"Error {contents.HttpStatus} in Getting the Download URL for closingId: {closingId} fileId: {fileId}");
                 }
             }
             else
             {
-                log.LogError($"Error in Getting the Download URL for {fileId}.");
+                log.LogError($"Empty return in the Download URL for closingId: {closingId} fileId: {fileId}");
             }
             
             return new byte[0];
@@ -123,7 +121,7 @@ namespace RonVideo.Activities
         [FunctionName(nameof(UploadVideo))]
         public static async Task<bool> UploadVideo([ActivityTrigger] VideoContent vc, ILogger log)
         {
-            log.LogInformation("Upload Video Started");
+            log.LogDebug($"Upload Video Started for {vc}");
             string basePath = @"c:\myazFuncuploads";
             string filename = vc.LoanId + "_" + vc.FileId + ".mp4";
             string filePath = Path.Combine(basePath, filename);
@@ -146,13 +144,13 @@ namespace RonVideo.Activities
             [Blob("videoblob/uploads/{data.LoanId}_{data.FileId}.mp4", FileAccess.Write)] Stream outVideo,
             ILogger log)
         {
-            log.LogInformation("Upload Video to Blob Started");
+            log.LogDebug($"Upload Video to Blob Started for {vc}");
    
             string filename = vc.LoanId + "_" + vc.FileId + ".mp4";
 
             await outVideo.WriteAsync(vc.Bytes, 0, vc.Bytes.Length);
            
-            log.LogInformation("Upload Video to Blob Completed");
+            log.LogDebug($"Upload Video to Blob Completed fro {vc}");
             return true;
         }
 
@@ -161,14 +159,15 @@ namespace RonVideo.Activities
         [return: Table("videoTable")]
         public static async Task<VideoItem> Upsert([ActivityTrigger] (VideoRowItem, VideoQueueItem, string) vv, ILogger log)
         {
-            log.LogInformation("Upsert Table Activity Called");
+
             var videoRow = vv.Item1;
             var myQueueItem = vv.Item2;
             var status = vv.Item3;
 
+            log.LogDebug($"Upsert Table Activity Called videorow:{videoRow} queue: {myQueueItem}");
             if (videoRow != null)
             {
-                log.LogInformation($"Update A row LoanId: {videoRow.LoanId}, FileId: {videoRow.FileId}.status: {status}, count: {videoRow.Count + 1}");
+                log.LogDebug($"Update A row LoanId: {videoRow.LoanId}, FileId: {videoRow.FileId}.status: {status}, count: {videoRow.Count + 1}");
                 var v = new VideoItem(videoRow.BlendId, videoRow.LoanId, videoRow.CloseId, videoRow.FileId,
                     videoRow.Count + 1, status, videoRow.PartitionKey, videoRow.FileId);
 
@@ -177,7 +176,7 @@ namespace RonVideo.Activities
             }
             else
             {
-                log.LogInformation($"Insert A row LoanId: {myQueueItem.LoanId}, FileId: {myQueueItem.FileId}.status: {status}");
+                log.LogDebug($"Insert A row LoanId: {myQueueItem.LoanId}, FileId: {myQueueItem.FileId}.status: {status}");
                 return new VideoItem(myQueueItem.BlendId, myQueueItem.LoanId, myQueueItem.CloseId, myQueueItem.FileId, 1, status, "Http", myQueueItem.FileId);
             }
         }
