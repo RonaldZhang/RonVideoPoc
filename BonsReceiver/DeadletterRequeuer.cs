@@ -48,7 +48,8 @@ namespace RonVideo
             ICloudQueueWrapper targetqueue = _cqManager.GetCloudQueueRef(connectionString, queueName);
             ICloudQueueWrapper poisonqueue = _cqManager.GetCloudQueueRef(connectionString, queueName + "-poison");
 
-            int count = 0;
+            int successCount = 0;
+            int totalCount = 0;
             CloudQueueMessage  msg = null;
             while (true)
             {
@@ -57,6 +58,8 @@ namespace RonVideo
                     msg = await poisonqueue.GetMessageAsync();
                     if (msg == null)
                         break;
+                    totalCount++;
+
                     setting = UpdateRonLoggerObject(setting, msg);
                     setting.LogInfomration(log, RonEventId.DeadletterRequeueFileStarted, "Poisoned Message" + msg.Id);
 
@@ -66,10 +69,9 @@ namespace RonVideo
                     await targetqueue.AddMessageAsync(msg);
                     setting = UpdateRonLoggerObject(setting, msg);
                     setting.LogInfomration(log, RonEventId.DeadletterRequeueProcessing, $"Add Poisoned Message to Queue {id}");
-
                     await poisonqueue.DeleteMessageAsync(id, popReceipt);
                     setting.LogInfomration(log, RonEventId.DeadletterRequeueProcessing, $"Delete Poisoned Message to Queue {id}");
-                    count++;
+                    successCount++;
                 }
                 catch (Exception ex)
                 {
@@ -78,7 +80,7 @@ namespace RonVideo
                 }
             }
 
-            return new OkObjectResult($"Reprocessed {count} messages from the {poisonqueue.Name} queue.");
+            return new OkObjectResult($"Reprocessed {count} messages from the {poisonqueue.Name} queue. done at: { DateTime.Now} total: { totalCount} success: {successCount}"");
         }
 
         private static RonLoggerObject UpdateRonLoggerObject(RonLoggerObject obj, CloudQueueMessage entity)

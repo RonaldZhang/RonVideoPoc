@@ -49,8 +49,12 @@ namespace RonVideo.Simulators
 
             var b = blobs.Where(x => string.Compare(x.Name, "samples/"+ path2,true)==0).FirstOrDefault();
 
-            BlobDownloadResult downloadResult = await b.DownloadContentAsync();
-            var res = downloadResult.Content.ToArray();  
+            var res = new byte[0];
+            if (b != null)
+            {
+                BlobDownloadResult downloadResult = await b.DownloadContentAsync();
+                res = downloadResult.Content.ToArray();
+            }
             //foreach (BlobClient blob in blobs)
             //{
             //    log.LogInformation(blob.Name);
