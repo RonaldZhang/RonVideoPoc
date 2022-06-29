@@ -10,7 +10,8 @@ namespace RonVideo.Utilities
         RonEventParser,
         VidoeTransfer,
         BatchVidoeTransfer,
-        DeadletterRequeuer
+        DeadletterRequeuer,
+        Orchestrator
     }
 }
 

@@ -34,5 +34,14 @@ namespace RonVideo.Utilities
         DeadletterRequeueProcessing = 5020,
         DeadletterRequeueProcessed = 5030,
         DeadletterRequeueFailed = 5040,
+        OrchestratorTriggered=6000,
+        OrchestratorProcesssStarted = 6001,
+        OrchestratorLoanIdNotFound= 6005,
+        OrchestratorLoanIdRetreived = 6010,
+        OrchestratorVideoDownloadFailed = 6015,
+        OrchestratorVideDownloaded = 6020,
+        OrchestratorVideoUploadFailed = 6025,
+        OrchestratorVideoUploaded = 6030,
+        OrchestratorTableUpsertCompleted = 6040
     }
 }

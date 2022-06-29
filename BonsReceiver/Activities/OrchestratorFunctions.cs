@@ -7,22 +7,25 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using System;
 using RonVideo.Exceptions;
 using Microsoft.Extensions.Logging;
+using RonVideo.Utilities;
 //using Microsoft.Extensions.Logging;
 
 namespace RonVideo.Activities
 {
     public static class OrchestratorFunctions
     {
+
         [FunctionName(nameof(TransferOrchestrator))]
         public static async Task<bool> TransferOrchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context, 
             ILogger log
         )
         {
+
             log = context.CreateReplaySafeLogger(log);
             var vInput = context.GetInput<OrchestratorInput>();
-            var vQueueItem = vInput.vq;
-            var videoRow = vInput.vr;
+            //var vQueueItem = vInput.vq;
+            //var videoRow = vInput.vr;
 
             string status = await internalCall(context,log);
 
@@ -32,7 +35,9 @@ namespace RonVideo.Activities
         private static async Task<string> internalCall(IDurableOrchestrationContext context, ILogger log)
         {
             var vInput = context.GetInput<OrchestratorInput>();
+
             var vQueueItem = vInput.vq;
+            RonLoggerObject ronObj = CreateRonLoggerObject(vQueueItem);
             var videoRow = vInput.vr;
             string status = string.Empty;
             var success = false;
@@ -41,17 +46,19 @@ namespace RonVideo.Activities
             {
                 try
                 {
-                    log.LogInformation("Calling F1.");
+                    ronObj.LogInfomration(log, RonEventId.OrchestratorProcesssStarted,  "Orchestrator Started. FileId:{vQueueItem.fileId}");
 
                     var loanId = await context.CallActivityAsync<string>("GetLoanId", vQueueItem.BlendId);
                     if (string.IsNullOrWhiteSpace(loanId))
                     {
+                        ronObj.LogError(log, RonEventId.OrchestratorLoanIdNotFound, "Orchestrator LoanId not found. FileId:{vQueueItem.fileId}");
                         status = "unable to get the loan Id";
                         ss = await context.CallActivityAsync<VideoItem>("Upsert", (videoRow, vQueueItem, status));
                         return "failed";
                     }
-
-                    log.LogInformation("Calling F2.");
+                    vQueueItem.LoanId = loanId;
+                    ronObj.LoanId = loanId;
+                    ronObj.LogInfomration(log, RonEventId.OrchestratorLoanIdRetreived, "Orchestrator Got LoanId. FileId:{vQueueItem.fileId} LoanID={loanId}");
 
                     var bytes = await context.CallActivityWithRetryAsync<byte[]>("GetVideo",
                         new RetryOptions(TimeSpan.FromSeconds(5), 4)
@@ -60,16 +67,16 @@ namespace RonVideo.Activities
                         },
                         vQueueItem);
 
-                    log.LogInformation("Calling F3.");
-
                     if (bytes.Length == 0)
                     {
+                        ronObj.LogError(log, RonEventId.OrchestratorVideoDownloadFailed, "Orchestrator video file download unsuccessful. FileId:{vQueueItem.fileId}");
                         status = "video file download unsuccessful";
                         ss = await context.CallActivityAsync<VideoItem>("Upsert", (videoRow, vQueueItem, status));
                         return "failed";
                     }
 
-                    log.LogInformation("Calling F4.");
+                    ronObj.LogInfomration(log, RonEventId.OrchestratorVideDownloaded, "Orchestrator Got video. FileId:{vQueueItem.fileId} LoanID={loanId}");
+
                     VideoContent vc = new VideoContent(vQueueItem.BlendId, loanId, vQueueItem.CloseId, vQueueItem.FileId, bytes);
 
                     bool upload2Blob = Environment.GetEnvironmentVariable("Upload2Blob") == "true";
@@ -78,14 +85,20 @@ namespace RonVideo.Activities
                     else
                         success = await context.CallActivityAsync<bool>("UploadVideo", vc);
 
-                    log.LogInformation("Calling F5.");
-                    status = success ? "Completed" : "Failed";
+
+                    if (success)
+                        ronObj.LogInfomration(log, RonEventId.OrchestratorVideoUploaded, "Orchestrator Video Uploaded. FileId:{vQueueItem.fileId} LoanID={loanId}");
+                    else
+                        ronObj.LogError(log, RonEventId.OrchestratorVideoUploadFailed, "Orchestrator Video Uploaded. FileId:{vQueueItem.fileId} LoanID={loanId}");
+
+                        status = success ? "Completed" : "Failed";
                     ss = await context.CallActivityAsync<VideoItem>("Upsert", (videoRow, vQueueItem, status));
 
+                    ronObj.LogInfomration(log, RonEventId.OrchestratorTableUpsertCompleted, "Orchestrator record upsert completed. FileId:{vQueueItem.fileId} LoanID={loanId}");
                 }
                 catch (Exception ex)
                 {
-                    log.LogError("Calling F1xxx.");
+                    ronObj.LogError(log, "F1xxx.");
                     ss = await context.CallActivityAsync<VideoItem>("Upsert", (videoRow, vQueueItem, status));
                     throw ex;
                 }
@@ -113,6 +126,21 @@ namespace RonVideo.Activities
             };
         }
 
+        private static RonLoggerObject CreateRonLoggerObject(VideoQueueItem qItem)
+        {
+            return new RonLoggerObject()
+            {
+
+                Id = RonEventId.OrchestratorTriggered,
+                EntityType = EntityType.Orchestrator.ToString(),
+                BonsEventId = qItem.BlendId,
+                CloseId = qItem.CloseId,
+                BlendId = qItem.BlendId,
+                FileId = qItem.FileId,
+                LoanId = qItem.LoanId,
+                Status = ""
+            };
+        }
 
     }
 }
