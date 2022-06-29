@@ -3,7 +3,7 @@
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "TimerInterval": "*/5 * * * *",
+    "TimerInterval": "*/1 * * * *",
     "IS_RUNNING_LOCALLY": true,
     "Upload2Blob": true
   },

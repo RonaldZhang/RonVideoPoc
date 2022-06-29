@@ -90,8 +90,8 @@ namespace RonVideo
                 string status = string.IsNullOrWhiteSpace(success) ? "Failed" : "Completed";
 
                 await Task.Delay(10);
-                setting.LogInfomration(log, RonEventId.BatchVideoTransferFileProcessed, $"Batch Timer trigger executed done at: { DateTime.Now} total: { count}");
             }
+            setting.LogInfomration(log, RonEventId.BatchVideoTransferFileProcessed, $"Batch Timer trigger executed done at: { DateTime.Now} total: { count}");
             return;
         }
 
