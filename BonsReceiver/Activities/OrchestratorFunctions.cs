@@ -4,9 +4,9 @@ using RonVideo.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 //using Microsoft.Azure.WebJobs.Host;
-using Grpc.Core.Logging;
 using System;
 using RonVideo.Exceptions;
+using Microsoft.Extensions.Logging;
 //using Microsoft.Extensions.Logging;
 
 namespace RonVideo.Activities
@@ -15,24 +15,21 @@ namespace RonVideo.Activities
     {
         [FunctionName(nameof(TransferOrchestrator))]
         public static async Task<bool> TransferOrchestrator(
-            [OrchestrationTrigger] IDurableOrchestrationContext context
+            [OrchestrationTrigger] IDurableOrchestrationContext context, 
+            ILogger log
         )
         {
-            //log = context.CreateReplaySafeLogger(log);
+            log = context.CreateReplaySafeLogger(log);
             var vInput = context.GetInput<OrchestratorInput>();
             var vQueueItem = vInput.vq;
             var videoRow = vInput.vr;
 
-            string status = await internalCall(context);
+            string status = await internalCall(context,log);
 
-            //if (status != "Completed")
-            //{
-            //    string bb = await context.CallActivityAsync<string>("Requeue", vQueueItem);
-            //}
             return true;
         }
 
-        private static async Task<string> internalCall(IDurableOrchestrationContext context)
+        private static async Task<string> internalCall(IDurableOrchestrationContext context, ILogger log)
         {
             var vInput = context.GetInput<OrchestratorInput>();
             var vQueueItem = vInput.vq;
@@ -44,6 +41,7 @@ namespace RonVideo.Activities
             {
                 try
                 {
+                    log.LogInformation("Calling F1.");
 
                     var loanId = await context.CallActivityAsync<string>("GetLoanId", vQueueItem.BlendId);
                     if (string.IsNullOrWhiteSpace(loanId))
@@ -53,13 +51,16 @@ namespace RonVideo.Activities
                         return "failed";
                     }
 
-                    //var bytes = await context.CallActivityAsync<byte[]>("GetVideo", vQueueItem.FileId);
+                    log.LogInformation("Calling F2.");
+
                     var bytes = await context.CallActivityWithRetryAsync<byte[]>("GetVideo",
                         new RetryOptions(TimeSpan.FromSeconds(5), 4)
                         {
                             Handle = TimexpiredExceptionHandler()
                         },
                         vQueueItem);
+
+                    log.LogInformation("Calling F3.");
 
                     if (bytes.Length == 0)
                     {
@@ -68,12 +69,8 @@ namespace RonVideo.Activities
                         return "failed";
                     }
 
+                    log.LogInformation("Calling F4.");
                     VideoContent vc = new VideoContent(vQueueItem.BlendId, loanId, vQueueItem.CloseId, vQueueItem.FileId, bytes);
-                    //vc.BlendId = vQueueItem.BlendId;
-                    //vc.CloseId = vQueueItem.CloseId;
-                    //vc.LoanId = loanId;
-                    //vc.FileId = vQueueItem.FileId;
-                    //vc.Bytes = bytes;
 
                     bool upload2Blob = Environment.GetEnvironmentVariable("Upload2Blob") == "true";
                     if (upload2Blob)
@@ -81,12 +78,14 @@ namespace RonVideo.Activities
                     else
                         success = await context.CallActivityAsync<bool>("UploadVideo", vc);
 
+                    log.LogInformation("Calling F5.");
                     status = success ? "Completed" : "Failed";
                     ss = await context.CallActivityAsync<VideoItem>("Upsert", (videoRow, vQueueItem, status));
 
                 }
                 catch (Exception ex)
                 {
+                    log.LogError("Calling F1xxx.");
                     ss = await context.CallActivityAsync<VideoItem>("Upsert", (videoRow, vQueueItem, status));
                     throw ex;
                 }
@@ -113,5 +112,7 @@ namespace RonVideo.Activities
                 return ex.InnerException is TimeExpiredException;
             };
         }
+
+
     }
 }

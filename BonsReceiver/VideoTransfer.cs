@@ -74,8 +74,10 @@ namespace RonVideo
 
         private static OrchestratorInput CreateOrchestratorInput(VideoQueueItem dtoQueue, VideoItem videoRow)
         {
-            VideoQueueItem video = dtoQueue.ShallowCopy();
-            VideoItem vidoeR = videoRow.ShallowCopy();
+
+            VideoQueueItem video = dtoQueue?.ShallowCopy();
+            VideoItem vidoeR = videoRow?.ShallowCopy();
+
             OrchestratorInput input = new OrchestratorInput(video, vidoeR);
             return input;
         }

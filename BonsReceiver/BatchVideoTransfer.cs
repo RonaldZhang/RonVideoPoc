@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
@@ -42,7 +43,8 @@ namespace RonVideo
             setting = CreateRonLoggerObject();
             setting.LogInfomration(log, RonEventId.BatchVideoTransferTriggered, $"Batch Timer trigger executed at: {DateTime.Now}");
 
-            AsyncPageable<VideoItem> queryResults = tableClient.QueryAsync<VideoItem>(ent=>ent.Status!="Completed");
+            AsyncPageable<VideoItem> queryResults = tableClient.QueryAsync<VideoItem>(ent=>string.Compare(ent.Status,"Completed",true)!=0);
+            int count = 0;
             await foreach (VideoItem entity in queryResults)
             {
                 setting = UpdateRonLoggerObject(setting, entity);
@@ -67,7 +69,15 @@ namespace RonVideo
                         //Tried last time, need to transfer again
                         log.LogInformation($"Reprocessing : {input1.vq.FileId}");
                         setting.LogInfomration(log, RonEventId.BatchVideoTransferFileProcessing, $"Reprocessing : {input1.vq.FileId}");
-                        success = await starter.StartNewAsync("TransferOrchestrator", input1);
+                        string instanceId = await starter.StartNewAsync("TransferOrchestrator", input1);
+                        await WaitUntilCompleted(starter, instanceId);
+
+                        //string instanceId = await starter.StartNewAsync("TransferOrchestrator", input1);
+                        //TimeSpan timeout = TimeSpan.FromSeconds(60);
+                        //TimeSpan retryInterval = TimeSpan.FromSeconds(1);
+                        //await starter.WaitForCompletionOrCreateCheckStatusResponseAsync(req,instanceId,timeout, retryInterval);
+
+                        count++;
                     }
                 }
                 //else
@@ -80,9 +90,26 @@ namespace RonVideo
                 string status = string.IsNullOrWhiteSpace(success) ? "Failed" : "Completed";
 
                 await Task.Delay(10);
-                setting.LogInfomration(log, RonEventId.BatchVideoTransferFileProcessed, $"Video Queue processed: {JsonConvert.SerializeObject(input1.vq)}");
+                setting.LogInfomration(log, RonEventId.BatchVideoTransferFileProcessed, $"Batch Timer trigger executed done at: { DateTime.Now} total: { count}");
             }
             return;
+        }
+
+        private static async Task WaitUntilCompleted(IDurableOrchestrationClient starter, string instanceId)
+        {
+            TimeSpan timeout = TimeSpan.FromSeconds(60);
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            DurableOrchestrationStatus s = null;
+            do
+            {
+                s = await starter.GetStatusAsync(instanceId);
+                await Task.Delay(100);
+                if (sw.ElapsedMilliseconds > timeout.TotalMilliseconds)
+                {
+                    await starter.TerminateAsync(instanceId, $"Exceeding the time limit {timeout.TotalSeconds}");
+                }
+            } while (s.RuntimeStatus == OrchestrationRuntimeStatus.Running || s.RuntimeStatus == OrchestrationRuntimeStatus.Pending || s.RuntimeStatus == OrchestrationRuntimeStatus.ContinuedAsNew || s.RuntimeStatus == OrchestrationRuntimeStatus.Unknown);
         }
 
         private static OrchestratorInput prepareOrchestratorInput(VideoItem entity)

@@ -37,10 +37,10 @@ namespace RonVideo.Simulators
         {
             log.LogInformation("Download request.");
 
-            foreach (BlobClient blob in blobs)
-            {
-                log.LogInformation(blob.Name);
-            }
+            //foreach (BlobClient blob in blobs)
+            //{
+            //    log.LogInformation(blob.Name);
+            //}
             var token = req.Query.ContainsKey("token")?req.Query["token"].ToString():string.Empty;
             log.LogInformation($"Token is {token}");
 

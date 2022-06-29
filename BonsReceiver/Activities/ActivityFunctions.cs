@@ -49,24 +49,6 @@ namespace RonVideo.Activities
             return "";
         }
 
-
-        //[FunctionName(nameof(GetDownloadUrl))]
-        //public static async Task<string> GetDownloadUrl([ActivityTrigger] string fileId, ILogger log)
-        //{
-        //    var response = await client.GetAsync(urlGetUrl + fileId);
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        log.LogInformation($"Ok in {nameof(GetDownloadUrl)}");
-        //        var contents = await response.Content.ReadAsStringAsync();
-        //        var dto = JsonConvert.DeserializeObject<BlendUrlResponse>(contents);
-        //        await Task.Delay(1000);
-        //        return dto.Url;
-        //    }
-   
-        //    log.LogError($"{response.StatusCode} {response.ReasonPhrase}: ");
-        //    return "";
-        //}
-        
         public static async Task<string> IntGetDownloadUrl(string closingId, string fileId, ILogger log)
         {
 
@@ -199,16 +181,5 @@ namespace RonVideo.Activities
                 return new VideoItem(myQueueItem.BlendId, myQueueItem.LoanId, myQueueItem.CloseId, myQueueItem.FileId, 1, status, "Http", myQueueItem.FileId);
             }
         }
-
-        ////Requeue
-        //[FunctionName(nameof(Requeue))]
-        //public static async Task<string> Requeue([ActivityTrigger] VideoQueueItem vq,
-        //    [Queue("videobatchqueue")] ICollector<string> outputQueueItem,
-        //    ILogger log)
-        //{ 
-        //    log.LogInformation($"Requeue {vq}");
-        //    //outputQueueItem.Add(JsonConvert.SerializeObject(vq));
-        //    return "success";
-        //}
     }
 }

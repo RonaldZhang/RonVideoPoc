@@ -18,7 +18,9 @@
       "Function.Upsert": "Information",
       "Function.Requeue": "Information",
       "Function.BatchRonVideo": "Information",
-      "Function": "Information"
+      "Function": "Warning",
+      "DurableTask.AzureStorage": "Warning",
+      "DurableTask.Core": "Warning"
     }
   },
   "extensions": {
