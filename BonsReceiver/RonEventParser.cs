@@ -44,7 +44,8 @@ namespace BonsReceiver
 
             if ((dto?.Data?.Type == "closing") && (dto?.Data?.Action == "updated"))
             {
-                log.LogInformation($"RON Video Event received Closing Id: {dto.Data.Id}");
+                setting.BonsEventId = dto.Id;
+                setting.LogInfomration(log, RonEventId.RonEventParserReceived, $"RON Video Event received Closing Id: {dto.Data.Id}");
 
                 fileIds.ForEach(x =>
                 {

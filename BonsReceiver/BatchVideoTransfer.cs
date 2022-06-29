@@ -39,8 +39,7 @@ namespace RonVideo
         IDurableOrchestrationClient starter,
         ILogger log)
         {
-            //log.LogInformation($"Video Records process started");
-            //log.LogInformation(Helper.GetEnvironmentVariable("AzureWebJobsStorage"));
+
             setting = CreateRonLoggerObject();
             setting.LogInfomration(log, RonEventId.BatchVideoTransferTriggered, $"Batch Timer trigger executed at: {DateTime.Now}");
 
@@ -63,7 +62,6 @@ namespace RonVideo
                 //Loook up the record
                 if (input1.vr != null)
                 {
-                    //log.LogInformation($"Table Record found with {myQueueItem.FileId}: {JsonConvert.SerializeObject(videoRow)}");
                     //Existing record
                     if (input1.vr.Status.Equals("Completed"))
                     //Already processed completely
@@ -91,7 +89,6 @@ namespace RonVideo
                 //else
                 //{
                 //    //New fileId
-                //    log.LogInformation($"No Record found with {myQueueItem.FileId}.");
                 //    success = await starter.StartNewAsync("TransferOrchestrator", input1);
                 //}
 

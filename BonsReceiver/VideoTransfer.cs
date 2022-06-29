@@ -41,7 +41,6 @@ namespace RonVideo
             //Loook up the record
             if (videoRow != null)
             {
-                //log.LogInformation($"Table Record found with {dtoQueue.FileId}: {JsonConvert.SerializeObject(videoRow)}");
                 setting.LogInfomration(log, RonEventId.VideoTransferRecordFound, $"Table Record found with {dtoQueue.FileId}: {JsonConvert.SerializeObject(videoRow)}");
 
                 //Existing record
