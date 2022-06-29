@@ -387,7 +387,7 @@ namespace RonvideoTests
         [TestMethod]
         public async Task UpsertETagUpdatedTest()
         {
-            VideoRowItem videoRow = new VideoRowItem("BlendId1", "LoanId1", "CloseId1", "FileId1",
+            VideoItem videoRow = new VideoItem("BlendId1", "LoanId1", "CloseId1", "FileId1",
                 3, "Status", "PartitionKey1", "RowKey1");
 
 
@@ -414,7 +414,7 @@ namespace RonvideoTests
         [TestMethod]
         public async Task UpsertETagNotUpdatedTest()
         {
-            VideoRowItem videoRow = null;
+            VideoItem videoRow = null;
 
             VideoQueueItem vQueueItem = new VideoQueueItem()
             {

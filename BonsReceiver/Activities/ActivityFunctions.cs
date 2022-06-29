@@ -157,7 +157,7 @@ namespace RonVideo.Activities
 
         [FunctionName(nameof(Upsert))]
         [return: Table("videoTable")]
-        public static async Task<VideoItem> Upsert([ActivityTrigger] (VideoRowItem, VideoQueueItem, string) vv, ILogger log)
+        public static async Task<VideoItem> Upsert([ActivityTrigger] (VideoItem, VideoQueueItem, string) vv, ILogger log)
         {
 
             var videoRow = vv.Item1;
