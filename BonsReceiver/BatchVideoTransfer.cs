@@ -109,7 +109,7 @@ namespace RonVideo
                 {
                     await starter.TerminateAsync(instanceId, $"Exceeding the time limit {timeout.TotalSeconds}");
                 }
-            } while (s.RuntimeStatus == OrchestrationRuntimeStatus.Running || s.RuntimeStatus == OrchestrationRuntimeStatus.Pending || s.RuntimeStatus == OrchestrationRuntimeStatus.ContinuedAsNew || s.RuntimeStatus == OrchestrationRuntimeStatus.Unknown);
+            } while (s==null ||s.RuntimeStatus == OrchestrationRuntimeStatus.Running || s.RuntimeStatus == OrchestrationRuntimeStatus.Pending || s.RuntimeStatus == OrchestrationRuntimeStatus.ContinuedAsNew || s.RuntimeStatus == OrchestrationRuntimeStatus.Unknown);
         }
 
         private static OrchestratorInput prepareOrchestratorInput(VideoItem entity)

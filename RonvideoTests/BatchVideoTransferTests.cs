@@ -40,7 +40,9 @@ namespace RonvideoTests
 
             var clientMock = new Mock<IDurableOrchestrationClient>();
             clientMock.Setup(client => client.StartNewAsync("TransferOrchestrator", It.IsAny<OrchestratorInput>())).Returns(Task.FromResult<string>(id));
-
+            var ret = new DurableOrchestrationStatus();
+            ret.RuntimeStatus = OrchestrationRuntimeStatus.Completed;
+            clientMock.Setup(client => client.GetStatusAsync(It.IsAny<string>(),It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<DurableOrchestrationStatus>(ret));
             BatchVideoTransfer vt = new BatchVideoTransfer();
             await vt.BatchRonVideoProcessStart(tableClientMock.Object, clientMock.Object, logger);
             try
