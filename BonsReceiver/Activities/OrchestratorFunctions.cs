@@ -175,8 +175,6 @@ namespace RonVideo.Activities
             return sta;
         }
 
-
-
         public static Func<Exception, bool> TimexpiredExceptionHandler()
             {
                 return ex =>
@@ -187,7 +185,6 @@ namespace RonVideo.Activities
                 };
             }
         
-
         private static RonLoggerObject CreateRonLoggerObject(ILogger log, VideoQueueItem qItem)
         {
             return new RonLoggerObject(log)
