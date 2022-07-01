@@ -6,6 +6,8 @@
     "TimerInterval": "*/1 * * * *",
     "IS_RUNNING_LOCALLY": true,
     "BlendBaseUrl": "http://localhost:7071/api/",
+    "keyVaultName": "keyVaultName",
+
     "Upload2Blob": true
   },
   "Host": {

@@ -9,8 +9,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using RonVideo.Exceptions;
-using System.Collections.Generic;
-using Azure.Storage.Blobs;
 using System.Diagnostics.CodeAnalysis;
 using RonVideo.Utilities;
 using System;

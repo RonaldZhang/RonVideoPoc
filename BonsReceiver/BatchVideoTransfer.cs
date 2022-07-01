@@ -4,29 +4,20 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage.Table;
-using Newtonsoft.Json;
 using RonVideo.Models;
-using RonVideo.Utilities;
 
 namespace RonVideo
 {
-    public class BatchVideoTransfer
+    public class BatchVideoTransfer : VideoTransferBase
     {
         private RonLoggerObject setting = null;
 
         [FunctionName("BatchRonVideo")]
-        //public  async Task<IActionResult> BatchRonVideoStarter(
         public async void BatchRonVideoStarter(
             [TimerTrigger("%TimerInterval%")] TimerInfo myTimer,
-           // [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
             [Table("videotable")] TableClient tableClient,
             [DurableClient] IDurableOrchestrationClient starter,
             ILogger log)
@@ -59,7 +50,7 @@ namespace RonVideo
 
                 OrchestratorInput input1=prepareOrchestratorInput(entity);
                 string success = "";
-                //Loook up the record
+     
                 if (input1.vr != null)
                 {
                     //Existing record
@@ -78,19 +69,10 @@ namespace RonVideo
                         string instanceId = await starter.StartNewAsync("TransferOrchestrator", input1);
                         VidoeTransferResult result =await WaitUntilCompleted(starter, instanceId);
 
-                        //string instanceId = await starter.StartNewAsync("TransferOrchestrator", input1);
-                        //TimeSpan timeout = TimeSpan.FromSeconds(60);
-                        //TimeSpan retryInterval = TimeSpan.FromSeconds(1);
-                        //await starter.WaitForCompletionOrCreateCheckStatusResponseAsync(req,instanceId,timeout, retryInterval);
                         if (VidoeTransferResult.Success==result)
                             successCount++;
                     }
                 }
-                //else
-                //{
-                //    //New fileId
-                //    success = await starter.StartNewAsync("TransferOrchestrator", input1);
-                //}
 
                 string status = string.IsNullOrWhiteSpace(success) ? "Failed" : "Completed";
 
@@ -100,36 +82,14 @@ namespace RonVideo
             return;
         }
 
-        private static async Task<VidoeTransferResult> WaitUntilCompleted(IDurableOrchestrationClient starter, string instanceId)
-        {
-            TimeSpan timeout = TimeSpan.FromSeconds(60);
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            DurableOrchestrationStatus s = null;
-            do
-            {
-                s = await starter.GetStatusAsync(instanceId);
-                await Task.Delay(100);
-                if (sw.ElapsedMilliseconds > timeout.TotalMilliseconds)
-                {
-                    await starter.TerminateAsync(instanceId, $"Exceeding the time limit {timeout.TotalSeconds}");
-                }
-            } while (s==null ||s.RuntimeStatus == OrchestrationRuntimeStatus.Running || s.RuntimeStatus == OrchestrationRuntimeStatus.Pending || s.RuntimeStatus == OrchestrationRuntimeStatus.ContinuedAsNew || s.RuntimeStatus == OrchestrationRuntimeStatus.Unknown);
-            //return false;
-            return s.Output.ToObject<VidoeTransferResult>();
-
-
-        }
-
         private static OrchestratorInput prepareOrchestratorInput(VideoItem entity)
         {
             //videoRow = entity;
-            VideoQueueItem myQueueItem = new VideoQueueItem(entity.BlendId, entity.LoanId, entity.CloseId, entity.FileId);
-            VideoQueueItem dto = myQueueItem.ShallowCopy(); // new VideoQueueItem(entity.BlendId, entity.LoanId, entity.CloseId, entity.FileId);
-
-            VideoQueueItem queue = dto.ShallowCopy(); // new VideoQueueItem(entity.BlendId, entity.LoanId, entity.CloseId, entity.FileId);
-            VideoItem item = entity.ShallowCopy();
-            OrchestratorInput input1 = new OrchestratorInput(queue, item);
+            VideoQueueItem videoQ = new VideoQueueItem(entity.BlendId, entity.LoanId, entity.CloseId, entity.FileId);
+            //VideoQueueItem dto = myQueueItem.ShallowCopy(); 
+            //VideoQueueItem videoQ = myQueueItem.ShallowCopy();// dto.ShallowCopy();
+            VideoItem videoR = entity.ShallowCopy();
+            OrchestratorInput input1 = new OrchestratorInput(videoQ, videoR);
 
             return input1;
         }

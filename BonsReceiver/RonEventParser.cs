@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
 using RonVideo.Models;
 using Microsoft.Azure.WebJobs;
-//using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RonVideo.EventModels;
 using System.Linq;
-using RonVideo.Utilities;
 
 namespace BonsReceiver
 {

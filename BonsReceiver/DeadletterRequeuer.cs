@@ -1,22 +1,14 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-//using Azure.Storage.Queues;
-using Azure.Storage.Queues.Models;
-//using Microsoft.Azure.Storage.Queue;
-using Microsoft.Azure.Storage;
-//using Microsoft.WindowsAzure.Storage.Queue;
-using Azure.Storage.Queues;
 using Microsoft.Azure.Storage.Queue;
 using RonVideo.Utilities;
-//using Microsoft.WindowsAzure.Storage;
-//using Microsoft.WindowsAzure.Storage.Queue;
+using RonVideo.Models;
+
 
 namespace RonVideo
 {

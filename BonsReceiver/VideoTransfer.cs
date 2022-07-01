@@ -1,28 +1,15 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
-using Azure;
+﻿using System.Threading.Tasks;
 using RonVideo.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using RonVideo.Utilities;
 
 namespace RonVideo
 {
-    public class VideoTransfer
+    public class VideoTransfer : VideoTransferBase
     {
 
-        private RonLoggerObject setting = null;
-
-        //private readonly Processing _processing;
-        //public VideoTransfer(Processing processing)
-        //{
-        //    _processing = processing;
-        //}
         [FunctionName(nameof(RonVideoStarter))]
 
         public async void RonVideoStarter(
@@ -34,9 +21,9 @@ namespace RonVideo
 
             RonLoggerObject setting = CreateRonLoggerObject(log, dtoQueue);
             setting.LogInfomration(RonEventId.VideoTransferTriggered, $"{JsonConvert.SerializeObject(dtoQueue)}");
-            OrchestratorInput oInpu1 = CreateOrchestratorInput(dtoQueue, videoRow);
+            OrchestratorInput oInput = CreateOrchestratorInput(dtoQueue, videoRow);
 
-            string success = "";
+            string instanceId = "";
 
             //Loook up the record
             if (videoRow != null)
@@ -53,19 +40,22 @@ namespace RonVideo
                 }
                 else
                 {
-                    //Tried last time, need to rransfer again
+                    //Tried last time, need to transfer again
                     setting.LogInfomration(RonEventId.VideoTransferReprocessing, $"Reprocessing : {dtoQueue.FileId}");
-                    success = await starter.StartNewAsync("TransferOrchestrator", oInpu1);
+                    instanceId = await starter.StartNewAsync("TransferOrchestrator", oInput);
+                    VidoeTransferResult result = await WaitUntilCompleted(starter, instanceId);
                 }
             }
             else
             {
                 //New fileId
                 setting.LogInfomration(RonEventId.VideoTransferNewProcessing, $"No Record found with {dtoQueue.FileId}.");
-                success = await starter.StartNewAsync("TransferOrchestrator", oInpu1);
+                instanceId = await starter.StartNewAsync("TransferOrchestrator", oInput);
+                VidoeTransferResult result = await WaitUntilCompleted(starter, instanceId);
+
             }
 
-            string status = string.IsNullOrWhiteSpace(success) ? "Failed" : "Completed";
+            string status = string.IsNullOrWhiteSpace(instanceId) ? "Failed" : "Completed";
             await Task.Delay(10);
             setting.LogInfomration(RonEventId.VideoTransferReceived, $"Video Queue processed: {JsonConvert.SerializeObject(dtoQueue)}");
             return;

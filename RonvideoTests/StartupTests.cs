@@ -43,6 +43,7 @@ namespace RonvideoTests
         public void TestRunInAzure()
         {
             Environment.SetEnvironmentVariable("IS_RUNNING_LOCALLY", "false");
+            Environment.SetEnvironmentVariable("keyVaultName", "keyVaultName");
             Startup startup = new Startup();
             Mock<IFunctionsHostBuilder> builderMock = new Mock<IFunctionsHostBuilder>();
             IServiceCollection serviceCollection = new ServiceCollection();

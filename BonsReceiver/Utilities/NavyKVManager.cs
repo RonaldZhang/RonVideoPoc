@@ -15,20 +15,16 @@ namespace RonVideo.Utilities
     {
         private readonly SecretClient _secretClient;
 
-        private string url= "https://applicationsecretsdemo.vault.azure.net/";
+        private string keyVaultName = Helper.GetEnvironmentVariable("keyVaultName"); 
         public NavyKVManager()
         {
+            string url = $"https://{keyVaultName}.vault.azure.net";
             _secretClient = new SecretClient(new Uri(url), new DefaultAzureCredential());
         }
 
-        //public KeyVaultManager(SecretClient secretClient)
-        //{
-        //    _secretClient = secretClient;
-        //}
         public async Task<string> GetSecret(string key)
         {
             KeyVaultSecret keyValueSecret = await _secretClient.GetSecretAsync(key);
-
             return keyValueSecret.Value;
         }
 

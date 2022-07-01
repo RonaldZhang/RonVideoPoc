@@ -1,7 +1,4 @@
 ﻿using Microsoft.Azure.Storage.Queue;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RonVideo.Utilities

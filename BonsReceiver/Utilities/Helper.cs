@@ -9,8 +9,7 @@ namespace RonVideo.Utilities
     {
         public static string GetEnvironmentVariable(string name)
         {
-            return name + ": " +
-                System.Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
+            return System.Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
         }
 
         //public static async string GetSecret(string secretName)
