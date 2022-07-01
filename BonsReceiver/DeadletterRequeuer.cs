@@ -80,7 +80,7 @@ namespace RonVideo
                 }
             }
 
-            return new OkObjectResult($"Reprocessed {count} messages from the {poisonqueue.Name} queue. done at: { DateTime.Now} total: { totalCount} success: {successCount}"");
+            return new OkObjectResult($"Reprocessed messages from the {poisonqueue.Name} queue. total: { totalCount} success: {successCount}");
         }
 
         private static RonLoggerObject UpdateRonLoggerObject(RonLoggerObject obj, CloudQueueMessage entity)

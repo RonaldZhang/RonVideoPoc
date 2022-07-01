@@ -13,23 +13,25 @@ using System.Collections.Generic;
 using Azure.Storage.Blobs;
 using System.Diagnostics.CodeAnalysis;
 using RonVideo.Utilities;
+using System;
 
 namespace RonVideo.Activities
 {
     public static class ActivityFunctions
     {
-        //private static readonly HttpClient client;
         public static  HttpClient client;
 
-        private static string urlLoanId = Constants.BaseURL + Constants.RouteLoanId;  // "http://localhost:8079/loanid/";
-        private static string urlGetUrl = Constants.BaseURL + Constants.RouteUrl;  //  "http://localhost:8079/url/";
+        private static string urlLoanId; 
+        private static string urlGetUrl; 
 
         static ActivityFunctions()
         {
             var handler = new HttpClientHandler();
             handler.DefaultProxyCredentials = CredentialCache.DefaultCredentials;
             client = new HttpClient(handler);
-        }
+            urlLoanId = Environment.GetEnvironmentVariable("BlendBaseUrl") + Constants.RouteLoanId;
+            urlGetUrl = Environment.GetEnvironmentVariable("BlendBaseUrl") + Constants.RouteUrl;
+    }
 
         [FunctionName(nameof(GetLoanId))]
         public static async Task<string> GetLoanId([ActivityTrigger] string blendId, ILogger log)

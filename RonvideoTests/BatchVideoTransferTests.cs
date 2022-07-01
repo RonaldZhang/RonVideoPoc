@@ -6,8 +6,10 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.Protected;
+using Newtonsoft.Json.Linq;
 using RonVideo;
 using RonVideo.Models;
+using RonVideo.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +44,9 @@ namespace RonvideoTests
             clientMock.Setup(client => client.StartNewAsync("TransferOrchestrator", It.IsAny<OrchestratorInput>())).Returns(Task.FromResult<string>(id));
             var ret = new DurableOrchestrationStatus();
             ret.RuntimeStatus = OrchestrationRuntimeStatus.Completed;
+            ret.Output = JToken.FromObject(VidoeTransferResult.Success);
             clientMock.Setup(client => client.GetStatusAsync(It.IsAny<string>(),It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<DurableOrchestrationStatus>(ret));
+
             BatchVideoTransfer vt = new BatchVideoTransfer();
             await vt.BatchRonVideoProcessStart(tableClientMock.Object, clientMock.Object, logger);
             try

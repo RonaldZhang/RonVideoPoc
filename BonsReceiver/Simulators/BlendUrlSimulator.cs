@@ -16,7 +16,7 @@ namespace RonVideo.Simulators
     [ExcludeFromCodeCoverage]
     public static class BlendUrlSimulator
     {
-        static string baseURL = Constants.BaseURL+ Constants.RouteDownload;
+        static string baseURL = Environment.GetEnvironmentVariable("BlendBaseUrl") + Constants.RouteDownload;
 
         [FunctionName("BlendUrlSimulator")]
         public static async Task<IActionResult> Run(

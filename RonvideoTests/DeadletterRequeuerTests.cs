@@ -52,7 +52,7 @@ namespace RonvideoTests
             Assert.IsNotNull(result);
             OkObjectResult okRes = result as OkObjectResult;
             Assert.IsNotNull(okRes);
-            Assert.AreEqual("Reprocessed 0 messages from the local queue.", okRes.Value);
+            Assert.AreEqual("Reprocessed messages from the local queue. total: 0 success: 0", okRes.Value);
         }
 
         [TestMethod]
@@ -71,7 +71,7 @@ namespace RonvideoTests
             Assert.IsNotNull(result);
             OkObjectResult okRes = result as OkObjectResult;
             Assert.IsNotNull(okRes);
-            Assert.AreEqual("Reprocessed 3 messages from the local queue.", okRes.Value);
+            Assert.AreEqual("Reprocessed messages from the local queue. total: 3 success: 3", okRes.Value);
         }
     }
 }
