@@ -37,7 +37,7 @@ namespace RonvideoTests
             //byte[] bytes = new byte[] { 1, 2, 3, 4, 5 };
             //contextMock.Setup(context => context.CallActivityAsync<byte[]>("GetVideo", "London")).Returns(Task.FromResult<byte[]>(bytes));
             var result = await OrchestratorFunctions.TransferOrchestrator(contextMock.Object, logger);
-            Assert.AreEqual(VidoeTransferResult.Failed, result);
+            Assert.AreEqual(VidoeTransferResult.FailedNoLoanId, result);
         }
 
         [TestMethod]
@@ -57,7 +57,7 @@ namespace RonvideoTests
             byte[] bytes = new byte[0];
             contextMock.Setup(context => context.CallActivityWithRetryAsync<byte[]>("GetVideo", It.IsAny<RetryOptions>(), It.IsAny<VideoQueueItem>())).Returns(Task.FromResult<byte[]>(bytes));
             var result = await OrchestratorFunctions.TransferOrchestrator(contextMock.Object,logger);
-            Assert.AreEqual(VidoeTransferResult.Failed, result);
+            Assert.AreEqual(VidoeTransferResult.FailedNoBytesVideo, result);
         }
 
         [TestMethod]
@@ -79,7 +79,7 @@ namespace RonvideoTests
             //contextMock.Setup(context => context.CallActivityWithRetryAsync<byte[]>("GetVideo", It.IsAny<RetryOptions>(), It.IsAny<VideoQueueItem>())).Throws(new Exception ("wrapper exception", new TimeExpiredException()));
             var result = await OrchestratorFunctions.TransferOrchestrator(contextMock.Object, logger);
             //Assert.ThrowsException<TimeExpiredException>(async () => { await OrchestratorFunctions.TransferOrchestrator(contextMock.Object); });
-            Assert.AreEqual(VidoeTransferResult.Failed, result);
+            Assert.AreEqual(VidoeTransferResult.FailedNoBytesVideo, result);
         }
 
         [TestMethod]
@@ -100,7 +100,7 @@ namespace RonvideoTests
             contextMock.Setup(context => context.CallActivityWithRetryAsync<byte[]>("GetVideo", It.IsAny<RetryOptions>(), It.IsAny<VideoQueueItem>())).Returns(Task.FromResult<byte[]>(bytes));
             contextMock.Setup(context => context.CallActivityAsync<bool>("UploadVideo", It.IsAny<VideoContent>())).Returns(Task.FromResult<bool>(false));
             var result = await OrchestratorFunctions.TransferOrchestrator(contextMock.Object, logger);
-            Assert.AreEqual( VidoeTransferResult.Failed,result);
+            Assert.AreEqual( VidoeTransferResult.FailedUpladFailed,result);
         }
 
         [TestMethod]
@@ -116,7 +116,7 @@ namespace RonvideoTests
             contextMock.Setup(context => context.CallActivityAsync<string>("GetLoanId", "BlendId")).Returns(Task.FromResult<string>("LoanId123"));
 
             VideoItem video = new VideoItem("blendid", "loanId", "closeId", "fileid", 1, "Completed", "http", "fileid");
-            contextMock.Setup(context => context.CallActivityAsync<VideoItem>("Upsert", "Seattle")).Returns(Task.FromResult<VideoItem>(video));
+            contextMock.Setup(context => context.CallActivityAsync<VideoItem>("Upsert",It.IsAny<(VideoItem, VideoQueueItem, string)>())).Returns(Task.FromResult<VideoItem>(video));
             byte[] bytes = new byte[] { 1, 2, 3, 4, 5 };
             contextMock.Setup(context => context.CallActivityWithRetryAsync<byte[]>("GetVideo", It.IsAny< RetryOptions>(), It.IsAny<VideoQueueItem>())).Returns(Task.FromResult<byte[]>(bytes));
             contextMock.Setup(context => context.CallActivityAsync<bool>("UploadVideo", It.IsAny<VideoContent>())).Returns(Task.FromResult<bool>(true));

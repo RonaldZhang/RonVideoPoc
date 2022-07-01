@@ -171,9 +171,10 @@ namespace RonVideo.Activities
         public static async Task<VideoItem> Upsert([ActivityTrigger] (VideoItem, VideoQueueItem, string) vv, ILogger log)
         {
 
-            var videoRow = vv.Item1;
-            var myQueueItem = vv.Item2;
-            var status = vv.Item3;
+            //var videoRow = vv.Item1;
+            //var myQueueItem = vv.Item2;
+            //var status = vv.Item3;
+            var (videoRow, myQueueItem, status) = vv;
 
             log.LogDebug($"Upsert Table Activity Called videorow:{videoRow} queue: {myQueueItem}");
             if (videoRow != null)

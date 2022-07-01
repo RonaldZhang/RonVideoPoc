@@ -7,8 +7,12 @@ namespace RonVideo.Utilities
     public enum VidoeTransferResult
     {
         Success=0,
-        Skipped=1,
-        Failed=2
-
+        InProgress=1,
+        Skipped=2,
+        FailedFirstDataRecording = 10,
+        FailedNoLoanId =11,
+        FailedNoBytesVideo=12,
+        FailedUpladFailed=13,
+        FailedFinalDataRecording=14
     }
 }
