@@ -33,6 +33,7 @@ namespace RonVideo.Activities
             urlGetUrl = Environment.GetEnvironmentVariable("BlendBaseUrl") + Constants.RouteUrl;
     }
 
+        #region Get Loan ID Function
         [FunctionName(nameof(GetLoanId))]
         public static async Task<string> GetLoanId([ActivityTrigger] string blendId, ILogger log)
         {
@@ -50,8 +51,10 @@ namespace RonVideo.Activities
             log.LogError($"GetLoanId Error. blend Id: {blendId} resp status:{response.StatusCode} reason: {response.ReasonPhrase} ");
             return "";
         }
+        #endregion
 
-        public static async Task<string> IntGetDownloadUrl(string closingId, string fileId, ILogger log)
+        #region Get Url
+        private static async Task<string> IntGetDownloadUrl(string closingId, string fileId, ILogger log)
         {
 
             var response = await client.GetAsync(urlGetUrl
@@ -71,7 +74,10 @@ namespace RonVideo.Activities
             return "";
         }
 
-        public static async Task<GetVideoResult> IntGetVideo(string url, ILogger log)
+        #endregion
+
+        #region Get URL and download
+        private static async Task<GetVideoResult> IntGetVideo(string url, ILogger log)
         {
             log.LogDebug($"Inside the GetVideo. The download Url: {url}");
             var response = await client.GetAsync(url);
@@ -118,7 +124,9 @@ namespace RonVideo.Activities
             
             return new byte[0];
         }
+        #endregion
 
+        #region Upload
         [ExcludeFromCodeCoverage]
         [FunctionName(nameof(UploadVideo))]
         public static async Task<bool> UploadVideo([ActivityTrigger] VideoContent vc, ILogger log)
@@ -155,8 +163,9 @@ namespace RonVideo.Activities
             log.LogDebug($"Upload Video to Blob Completed fro {vc}");
             return true;
         }
+        #endregion
 
-
+        #region Table row insert/update
         [FunctionName(nameof(Upsert))]
         [return: Table("videoTable")]
         public static async Task<VideoItem> Upsert([ActivityTrigger] (VideoItem, VideoQueueItem, string) vv, ILogger log)
@@ -182,5 +191,6 @@ namespace RonVideo.Activities
                 return new VideoItem(myQueueItem.BlendId, myQueueItem.LoanId, myQueueItem.CloseId, myQueueItem.FileId, 1, status, "Http", myQueueItem.FileId);
             }
         }
+        #endregion
     }
 }

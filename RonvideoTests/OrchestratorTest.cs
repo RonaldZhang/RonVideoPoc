@@ -19,6 +19,7 @@ namespace RonvideoTests
     public class OrchestratorTest
     {
         private readonly ILogger logger = NullLoggerFactory.Instance.CreateLogger("OrchestratorTest");
+
         [TestMethod]
         public async Task RunOrchectratorEmptyLoanIdTest()
         {

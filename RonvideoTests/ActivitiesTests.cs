@@ -120,7 +120,8 @@ namespace RonvideoTests
             };
             ActivityFunctions.client = client;
 
-            var resp = await ActivityFunctions.IntGetDownloadUrl("blendId1","123", logger);
+            string resp =await TestHelper.CallStaticPrivateMethod<Type, Task<string>>(typeof(ActivityFunctions), "IntGetDownloadUrl", new object[] { "blendId1", "123", logger });
+            //var resp = await ActivityFunctions.IntGetDownloadUrl("blendId1","123", logger);
             Assert.AreEqual("http://abc.mysite.com/dload", resp);
 
         }
@@ -149,7 +150,8 @@ namespace RonvideoTests
             };
             ActivityFunctions.client = client;
 
-            var resp = await ActivityFunctions.IntGetDownloadUrl("blendId1", "123", logger);
+            string resp = await TestHelper.CallStaticPrivateMethod<Type, Task<string>>(typeof(ActivityFunctions), "IntGetDownloadUrl", new object[] { "blendId1", "123", logger });
+            //var resp = await ActivityFunctions.IntGetDownloadUrl("blendId1", "123", logger);
             Assert.AreEqual("", resp);
 
         }
@@ -290,7 +292,8 @@ namespace RonvideoTests
             //qItem.FileId = "fileId1";
             //qItem.LoanId = "loanId1";
 
-            var resp = await ActivityFunctions.IntGetVideo("http://abc.mysite.com/dload", logger);
+            var resp = await TestHelper.CallStaticPrivateMethod<Type, Task<GetVideoResult>>(typeof(ActivityFunctions), "IntGetVideo", new object[] { "http://abc.mysite.com/dload", logger });
+            //var resp = await ActivityFunctions.IntGetVideo("http://abc.mysite.com/dload", logger);
             //var res = Encoding.Default.GetBytes(txt);
             Assert.IsTrue(bytes.SequenceEqual(resp.bytes));
 
@@ -325,8 +328,8 @@ namespace RonvideoTests
             };
             ActivityFunctions.client = client;
 
-
-            var resp = await ActivityFunctions.IntGetVideo("http://abc.mysite.com/dload", logger);
+            var resp = await TestHelper.CallStaticPrivateMethod<Type, Task<GetVideoResult>>(typeof(ActivityFunctions), "IntGetVideo", new object[] { "http://abc.mysite.com/dload", logger });
+            //var resp = await ActivityFunctions.IntGetVideo("http://abc.mysite.com/dload", logger);
             Assert.IsNotNull(resp);
             Assert.IsTrue(resp.bytes.SequenceEqual(bytes));
             Assert.IsTrue(resp.HttpStatus==HttpStatusCode.Gone);
