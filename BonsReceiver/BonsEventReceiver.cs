@@ -21,7 +21,7 @@ namespace BonsReceiver
         public BonsEventReceiver(IKeyVaultManager kvm)
         {
             _kvManager = kvm;
-            setting = CreateRonLoggerObject();
+
         }
         [FunctionName("ReceiverFunc")]
         public  async Task<IActionResult> Run(
@@ -29,7 +29,8 @@ namespace BonsReceiver
             [Queue("bonsqueue")] ICollector<string> outputQueueItem,
             ILogger log)
         {
-            setting.LogInfomration(log, RonEventId.BonEventTriggerred, "{req}");
+            setting = CreateRonLoggerObject(log);
+            setting.LogInfomration( RonEventId.BonEventTriggerred, "{req}");
 
             string responseMessage = "Event Received";
             try
@@ -39,11 +40,11 @@ namespace BonsReceiver
                 if (!string.IsNullOrWhiteSpace(data))
                 {
                     outputQueueItem.Add(data);
-                    setting.LogInfomration(log, RonEventId.BonEventReceived, "Successful");
+                    setting.LogInfomration(RonEventId.BonEventReceived, "Successful");
                 }
                 else
                 {
-                    setting.LogError(log, RonEventId.BonEventNoData, "No payload was found in the event. skipped!");
+                    setting.LogError( RonEventId.BonEventNoData, "No payload was found in the event. skipped!");
                     responseMessage = "No Event Received";
                 }
             }
@@ -64,9 +65,9 @@ namespace BonsReceiver
             return data;
         }
 
-        private static RonLoggerObject CreateRonLoggerObject()
+        private static RonLoggerObject CreateRonLoggerObject(ILogger log)
         {
-            return new RonLoggerObject()
+            return new RonLoggerObject(log)
             {
                 Id=RonEventId.BonEventTriggerred,
                 EntityType = EntityType.EventReceiver.ToString(),

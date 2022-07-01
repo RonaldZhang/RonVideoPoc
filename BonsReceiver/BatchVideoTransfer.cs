@@ -40,8 +40,8 @@ namespace RonVideo
         ILogger log)
         {
 
-            setting = CreateRonLoggerObject();
-            setting.LogInfomration(log, RonEventId.BatchVideoTransferTriggered, $"Batch Timer trigger executed at: {DateTime.Now}");
+            setting = CreateRonLoggerObject(log);
+            setting.LogInfomration( RonEventId.BatchVideoTransferTriggered, $"Batch Timer trigger executed at: {DateTime.Now}");
 
             AsyncPageable<VideoItem> queryResults = tableClient.QueryAsync<VideoItem>(ent=>string.Compare(ent.Status,"Completed",true)!=0);
             IAsyncEnumerator<VideoItem> enumerator = queryResults.GetAsyncEnumerator();
@@ -55,7 +55,7 @@ namespace RonVideo
                 VideoItem entity = enumerator.Current;
                 totalCount++;
                 setting = UpdateRonLoggerObject(setting, entity);
-                setting.LogInfomration(log, RonEventId.BatchVideoTransferFileStarted, $"{entity.PartitionKey}\t{entity.RowKey}\t{entity.Timestamp}\t{entity.FileId}\t{entity.Status}");
+                setting.LogInfomration( RonEventId.BatchVideoTransferFileStarted, $"{entity.PartitionKey}\t{entity.RowKey}\t{entity.Timestamp}\t{entity.FileId}\t{entity.Status}");
 
                 OrchestratorInput input1=prepareOrchestratorInput(entity);
                 string success = "";
@@ -67,14 +67,14 @@ namespace RonVideo
                     //Already processed completely
                     {
                         await Task.Delay(10);
-                        setting.LogInfomration(log, RonEventId.BatchVideoTransferFileStarted, $"Alredy Processed. Please chekc the Query. Skip the File : {input1.vq.FileId}");
+                        setting.LogInfomration( RonEventId.BatchVideoTransferFileStarted, $"Alredy Processed. Please chekc the Query. Skip the File : {input1.vq.FileId}");
                         continue;
                     }
                     else
                     {
                         //Tried last time, need to transfer again
                         log.LogInformation($"Reprocessing : {input1.vq.FileId}");
-                        setting.LogInfomration(log, RonEventId.BatchVideoTransferFileProcessing, $"Reprocessing : {input1.vq.FileId}");
+                        setting.LogInfomration( RonEventId.BatchVideoTransferFileProcessing, $"Reprocessing : {input1.vq.FileId}");
                         string instanceId = await starter.StartNewAsync("TransferOrchestrator", input1);
                         VidoeTransferResult result =await WaitUntilCompleted(starter, instanceId);
 
@@ -96,7 +96,7 @@ namespace RonVideo
 
                 await Task.Delay(10);
             }
-            setting.LogInfomration(log, RonEventId.BatchVideoTransferFileProcessed, $"Batch Timer trigger executed done at: { DateTime.Now} total: { totalCount} success: {successCount}");
+            setting.LogInfomration( RonEventId.BatchVideoTransferFileProcessed, $"Batch Timer trigger executed done at: { DateTime.Now} total: { totalCount} success: {successCount}");
             return;
         }
 
@@ -134,9 +134,9 @@ namespace RonVideo
             return input1;
         }
 
-        private static RonLoggerObject CreateRonLoggerObject()
+        private static RonLoggerObject CreateRonLoggerObject(ILogger log)
         {
-            return new RonLoggerObject()
+            return new RonLoggerObject(log)
             {
                 Id = RonEventId.BatchVideoTransferTriggered,
                 EntityType = EntityType.BatchVidoeTransfer.ToString(),

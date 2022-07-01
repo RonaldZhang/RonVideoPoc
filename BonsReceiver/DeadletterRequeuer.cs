@@ -37,8 +37,8 @@ namespace RonVideo
             ILogger log)
         {
 
-            setting = CreateRonLoggerObject();
-            setting.LogInfomration(log, RonEventId.DeadletterRequeueTriggered, "Reprocessing Deadletters Triggered");
+            setting = CreateRonLoggerObject(log);
+            setting.LogInfomration(RonEventId.DeadletterRequeueTriggered, "Reprocessing Deadletters Triggered");
 
 
             // Get the connection string from app settings
@@ -61,21 +61,21 @@ namespace RonVideo
                     totalCount++;
 
                     setting = UpdateRonLoggerObject(setting, msg);
-                    setting.LogInfomration(log, RonEventId.DeadletterRequeueFileStarted, "Poisoned Message" + msg.Id);
+                    setting.LogInfomration( RonEventId.DeadletterRequeueFileStarted, "Poisoned Message" + msg.Id);
 
 
                     string id = msg.Id;
                     string popReceipt = msg.PopReceipt;
                     await targetqueue.AddMessageAsync(msg);
                     setting = UpdateRonLoggerObject(setting, msg);
-                    setting.LogInfomration(log, RonEventId.DeadletterRequeueProcessing, $"Add Poisoned Message to Queue {id}");
+                    setting.LogInfomration( RonEventId.DeadletterRequeueProcessing, $"Add Poisoned Message to Queue {id}");
                     await poisonqueue.DeleteMessageAsync(id, popReceipt);
-                    setting.LogInfomration(log, RonEventId.DeadletterRequeueProcessing, $"Delete Poisoned Message to Queue {id}");
+                    setting.LogInfomration( RonEventId.DeadletterRequeueProcessing, $"Delete Poisoned Message to Queue {id}");
                     successCount++;
                 }
                 catch (Exception ex)
                 {
-                    setting.LogInfomration(log, RonEventId.DeadletterRequeueFailed, $"Exception in Requeuing Poisoned Message {ex.Message}");
+                    setting.LogInfomration( RonEventId.DeadletterRequeueFailed, $"Exception in Requeuing Poisoned Message {ex.Message}");
           
                 }
             }
@@ -93,9 +93,9 @@ namespace RonVideo
             return obj;
         }
 
-        private static RonLoggerObject CreateRonLoggerObject()
+        private static RonLoggerObject CreateRonLoggerObject(ILogger log)
         {
-            return new RonLoggerObject()
+            return new RonLoggerObject(log)
             {
                 Id = RonEventId.BonEventTriggerred,
                 EntityType = EntityType.DeadletterRequeuer.ToString(),

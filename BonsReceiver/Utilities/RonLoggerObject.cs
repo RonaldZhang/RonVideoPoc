@@ -15,7 +15,15 @@ namespace RonVideo.Utilities
         // Description: A detailed description of the log event. 
         public const string Template = "{EventIdDescription}, {EntityType},{BonsEventId}, {CloseId}, {BlendId}, {fileId}, {loanId}, {Status}";
 
+        public RonLoggerObject(ILogger log)
+        {
+            Log = log;
+
+        }
+
         public RonEventId Id { get; set; }
+
+        public ILogger Log { get; set; }
         public string EventIdDescription 
         { get 
             {
@@ -45,62 +53,62 @@ namespace RonVideo.Utilities
             return objs;
         }
 
-        public void LogInfomration(ILogger log)
+        public void LogInfomration()
         {
-            log.LogInformation(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
+            Log.LogInformation(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
         }
 
-        public void LogInfomration(ILogger log, string status)
+        public void LogInfomration(string status)
         {
             this.Status=status;
-            log.LogInformation(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
+            Log.LogInformation(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
         }
 
 
-        public void LogInfomration(ILogger log, RonEventId id, string status)
+        public void LogInfomration( RonEventId id, string status)
         {
             this.Id = id;
             this.Status = status;
-            log.LogInformation(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
+            Log.LogInformation(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
         }
 
        
-        public void LogError(ILogger log)
+        public void LogError()
         {
-            log.LogError(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
+            Log.LogError(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
         }
 
-        public void LogError(ILogger log, string status)
+        public void LogError( string status)
         {
             this.Status = status;
-            log.LogError(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
+            Log.LogError(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
         }
 
 
-        public void LogError(ILogger log, RonEventId id, string status)
+        public void LogError( RonEventId id, string status)
         {
             this.Id = id;
             this.Status = status;
-            log.LogError(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
+            Log.LogError(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
         }
 
-        public void LogDebug(ILogger log)
+        public void LogDebug()
         {
-            log.LogDebug(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
+            Log.LogDebug(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
         }
 
-        public void LogDebug(ILogger log, string status)
+        public void LogDebug( string status)
         {
             this.Status = status;
-            log.LogDebug(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
+            Log.LogDebug(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
         }
 
 
-        public void LogDebug(ILogger log, RonEventId id, string status)
+        public void LogDebug( RonEventId id, string status)
         {
             this.Id = id;
             this.Status = status;
-            log.LogDebug(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
+            Log.LogDebug(new EventId((int)Id), RonLoggerObject.Template, ToObjectArray());
         }
     }
 }

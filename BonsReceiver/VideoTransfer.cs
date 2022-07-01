@@ -32,8 +32,8 @@ namespace RonVideo
         ILogger log)
         {
 
-            RonLoggerObject setting = CreateRonLoggerObject(dtoQueue);
-            setting.LogInfomration(log, RonEventId.VideoTransferTriggered, $"{JsonConvert.SerializeObject(dtoQueue)}");
+            RonLoggerObject setting = CreateRonLoggerObject(log, dtoQueue);
+            setting.LogInfomration(RonEventId.VideoTransferTriggered, $"{JsonConvert.SerializeObject(dtoQueue)}");
             OrchestratorInput oInpu1 = CreateOrchestratorInput(dtoQueue, videoRow);
 
             string success = "";
@@ -41,33 +41,33 @@ namespace RonVideo
             //Loook up the record
             if (videoRow != null)
             {
-                setting.LogInfomration(log, RonEventId.VideoTransferRecordFound, $"Table Record found with {dtoQueue.FileId}: {JsonConvert.SerializeObject(videoRow)}");
+                setting.LogInfomration(RonEventId.VideoTransferRecordFound, $"Table Record found with {dtoQueue.FileId}: {JsonConvert.SerializeObject(videoRow)}");
 
                 //Existing record
                 if ("Completed" == videoRow.Status)
                 //Already processed completely
                 {
                     await Task.Delay(10);
-                    setting.LogInfomration(log, RonEventId.VideoTransferSkipped, $"Alredy Processed. Skip the File : {dtoQueue.FileId}");
+                    setting.LogInfomration(RonEventId.VideoTransferSkipped, $"Alredy Processed. Skip the File : {dtoQueue.FileId}");
                     return;
                 }
                 else
                 {
                     //Tried last time, need to rransfer again
-                    setting.LogInfomration(log, RonEventId.VideoTransferReprocessing, $"Reprocessing : {dtoQueue.FileId}");
+                    setting.LogInfomration(RonEventId.VideoTransferReprocessing, $"Reprocessing : {dtoQueue.FileId}");
                     success = await starter.StartNewAsync("TransferOrchestrator", oInpu1);
                 }
             }
             else
             {
                 //New fileId
-                setting.LogInfomration(log, RonEventId.VideoTransferNewProcessing, $"No Record found with {dtoQueue.FileId}.");
+                setting.LogInfomration(RonEventId.VideoTransferNewProcessing, $"No Record found with {dtoQueue.FileId}.");
                 success = await starter.StartNewAsync("TransferOrchestrator", oInpu1);
             }
 
             string status = string.IsNullOrWhiteSpace(success) ? "Failed" : "Completed";
             await Task.Delay(10);
-            setting.LogInfomration(log, RonEventId.VideoTransferReceived, $"Video Queue processed: {JsonConvert.SerializeObject(dtoQueue)}");
+            setting.LogInfomration(RonEventId.VideoTransferReceived, $"Video Queue processed: {JsonConvert.SerializeObject(dtoQueue)}");
             return;
         }
 
@@ -81,9 +81,9 @@ namespace RonVideo
             return input;
         }
 
-        private static RonLoggerObject CreateRonLoggerObject(VideoQueueItem qItem)
+        private static RonLoggerObject CreateRonLoggerObject(ILogger log, VideoQueueItem qItem)
         {
-            return new RonLoggerObject()
+            return new RonLoggerObject( log)
             {
 
                 Id = RonEventId.VideoTransferTriggered,

@@ -15,24 +15,19 @@ namespace BonsReceiver
     {
         private RonLoggerObject setting = null;
 
-
-        public RonEventParser()
-        {
-            setting = CreateRonLoggerObject();
-        }
-
         [FunctionName("RonParserFunc")]
         public void Run([QueueTrigger("bonsqueue", Connection = "")]string myQueueItem,
             [Queue("videosubsqueue")] ICollector<string> outputQueueItem,
             ILogger log)
         {
-            setting.LogInfomration(log, RonEventId.RonEventParserTriggerred, $"{myQueueItem}");
+            setting = CreateRonLoggerObject(log);
+            setting.LogInfomration( RonEventId.RonEventParserTriggerred, $"{myQueueItem}");
             Event dto = Convert2Object(myQueueItem, log);
 
             if (dto != null)
             {
                 setting.BonsEventId = dto.Id;
-                setting.LogInfomration(log, RonEventId.RonEventParserReceived, $"{JsonConvert.SerializeObject(dto)}");
+                setting.LogInfomration( RonEventId.RonEventParserReceived, $"{JsonConvert.SerializeObject(dto)}");
             }
 
             ProcessBonsEvent(outputQueueItem, log, setting, dto);
@@ -45,7 +40,7 @@ namespace BonsReceiver
             if ((dto?.Data?.Type == "closing") && (dto?.Data?.Action == "updated"))
             {
                 setting.BonsEventId = dto.Id;
-                setting.LogInfomration(log, RonEventId.RonEventParserReceived, $"RON Video Event received Closing Id: {dto.Data.Id}");
+                setting.LogInfomration( RonEventId.RonEventParserReceived, $"RON Video Event received Closing Id: {dto.Data.Id}");
 
                 fileIds.ForEach(x =>
                 {
@@ -54,17 +49,17 @@ namespace BonsReceiver
                     setting.BlendId = newitem.BlendId;
                     setting.CloseId = newitem.CloseId;
                     setting.FileId = newitem.FileId;
-                    setting.LogInfomration(log, RonEventId.BonEventProccessed, $"{JsonConvert.SerializeObject(dto)}");
+                    setting.LogInfomration( RonEventId.BonEventProccessed, $"{JsonConvert.SerializeObject(dto)}");
      
                 });
             }
             else if (dto != null)
             {
-                setting.LogInfomration(log, RonEventId.RonEventParserOtherEvents, $"Other Event received, Skipped.  type: {dto?.Data?.Type}, action:{dto?.Data?.Action}");
+                setting.LogInfomration( RonEventId.RonEventParserOtherEvents, $"Other Event received, Skipped.  type: {dto?.Data?.Type}, action:{dto?.Data?.Action}");
               }
             else
             {
-                setting.LogInfomration(log, RonEventId.RonEventParserInvalidData, "Invalid payload received Event received, Skipped.");
+                setting.LogInfomration( RonEventId.RonEventParserInvalidData, "Invalid payload received Event received, Skipped.");
             }
         }
 
@@ -77,15 +72,15 @@ namespace BonsReceiver
             }
             catch
             {
-                setting.LogInfomration(log, RonEventId.BonEventParseError, "Unexpected Payload received, Skipped");
+                setting.LogInfomration( RonEventId.BonEventParseError, "Unexpected Payload received, Skipped");
             }
 
             return dto;
         }
 
-        private static RonLoggerObject CreateRonLoggerObject()
+        private static RonLoggerObject CreateRonLoggerObject(ILogger log)
         {
-            return new RonLoggerObject()
+            return new RonLoggerObject(log)
             {
                 Id = RonEventId.RonEventParserTriggerred,
                 EntityType = EntityType.RonEventParser.ToString(),

@@ -21,12 +21,8 @@ namespace RonVideo.Activities
             ILogger log
         )
         {
-
             log = context.CreateReplaySafeLogger(log);
             var vInput = context.GetInput<OrchestratorInput>();
-            //var vQueueItem = vInput.vq;
-            //var videoRow = vInput.vr;
-
             VidoeTransferResult status = await internalCall(context,log);
 
             return status;
@@ -37,7 +33,7 @@ namespace RonVideo.Activities
             var vInput = context.GetInput<OrchestratorInput>();
 
             var vQueueItem = vInput.vq;
-            RonLoggerObject ronObj = CreateRonLoggerObject(vQueueItem);
+            RonLoggerObject ronObj = CreateRonLoggerObject(log, vQueueItem);
             var videoRow = vInput.vr;
             string status = string.Empty;
             var success = false;
@@ -47,19 +43,19 @@ namespace RonVideo.Activities
             {
                 try
                 {
-                    ronObj.LogInfomration(log, RonEventId.OrchestratorProcesssStarted,  $"Orchestrator Started. FileId:{vQueueItem.FileId}");
+                    ronObj.LogInfomration( RonEventId.OrchestratorProcesssStarted,  $"Orchestrator Started. FileId:{vQueueItem.FileId}");
 
                     var loanId = await context.CallActivityAsync<string>("GetLoanId", vQueueItem.BlendId);
                     if (string.IsNullOrWhiteSpace(loanId))
                     {
-                        ronObj.LogError(log, RonEventId.OrchestratorLoanIdNotFound, $"Orchestrator LoanId not found. FileId:{vQueueItem.FileId}");
+                        ronObj.LogError( RonEventId.OrchestratorLoanIdNotFound, $"Orchestrator LoanId not found. FileId:{vQueueItem.FileId}");
                         status = "unable to get the loan Id";
                         ss = await context.CallActivityAsync<VideoItem>("Upsert", (videoRow, vQueueItem, status));
                         return VidoeTransferResult.Failed;
                     }
                     vQueueItem.LoanId = loanId;
                     ronObj.LoanId = loanId;
-                    ronObj.LogInfomration(log, RonEventId.OrchestratorLoanIdRetreived, $"Orchestrator Got LoanId. FileId:{vQueueItem.FileId} LoanID={loanId}");
+                    ronObj.LogInfomration(RonEventId.OrchestratorLoanIdRetreived, $"Orchestrator Got LoanId. FileId:{vQueueItem.FileId} LoanID={loanId}");
 
                     var bytes = await context.CallActivityWithRetryAsync<byte[]>("GetVideo",
                         new RetryOptions(TimeSpan.FromSeconds(5), 4)
@@ -70,13 +66,13 @@ namespace RonVideo.Activities
 
                     if (bytes.Length == 0)
                     {
-                        ronObj.LogError(log, RonEventId.OrchestratorVideoDownloadFailed, $"Orchestrator video file download unsuccessful. FileId:{vQueueItem.FileId}");
+                        ronObj.LogError( RonEventId.OrchestratorVideoDownloadFailed, $"Orchestrator video file download unsuccessful. FileId:{vQueueItem.FileId}");
                         status = "video file download unsuccessful";
                         ss = await context.CallActivityAsync<VideoItem>("Upsert", (videoRow, vQueueItem, status));
                         return VidoeTransferResult.Failed;
                     }
 
-                    ronObj.LogInfomration(log, RonEventId.OrchestratorVideDownloaded, $"Orchestrator Got video. FileId:{vQueueItem.FileId} LoanID={loanId}");
+                    ronObj.LogInfomration( RonEventId.OrchestratorVideDownloaded, $"Orchestrator Got video. FileId:{vQueueItem.FileId} LoanID={loanId}");
 
                     VideoContent vc = new VideoContent(vQueueItem.BlendId, loanId, vQueueItem.CloseId, vQueueItem.FileId, bytes);
 
@@ -88,9 +84,9 @@ namespace RonVideo.Activities
 
 
                     if (success)
-                        ronObj.LogInfomration(log, RonEventId.OrchestratorVideoUploaded, $"Orchestrator Video Uploaded. FileId:{vQueueItem.FileId} LoanID={loanId}");
+                        ronObj.LogInfomration(RonEventId.OrchestratorVideoUploaded, $"Orchestrator Video Uploaded. FileId:{vQueueItem.FileId} LoanID={loanId}");
                     else
-                        ronObj.LogError(log, RonEventId.OrchestratorVideoUploadFailed, "Orchestrator Video Uploaded. FileId:{vQueueItem.fileId} LoanID={loanId}");
+                        ronObj.LogError(RonEventId.OrchestratorVideoUploadFailed, "Orchestrator Video Uploaded. FileId:{vQueueItem.fileId} LoanID={loanId}");
 
                     status = success ? "Completed" : "Failed";
                     ss = await context.CallActivityAsync<VideoItem>("Upsert", (videoRow, vQueueItem, status));
@@ -98,11 +94,11 @@ namespace RonVideo.Activities
                     if (success)
                         sta = VidoeTransferResult.Success;
 
-                    ronObj.LogInfomration(log, RonEventId.OrchestratorTableUpsertCompleted, $"Orchestrator record upsert completed. FileId:{vQueueItem.FileId} LoanID={loanId}");
+                    ronObj.LogInfomration( RonEventId.OrchestratorTableUpsertCompleted, $"Orchestrator record upsert completed. FileId:{vQueueItem.FileId} LoanID={loanId}");
                 }
                 catch (Exception ex)
                 {
-                    ronObj.LogError(log, "F1xxx.");
+                    ronObj.LogError( "F1xxx.");
                     ss = await context.CallActivityAsync<VideoItem>("Upsert", (videoRow, vQueueItem, status));
                     throw ex;
                 }
@@ -120,6 +116,20 @@ namespace RonVideo.Activities
             return sta;
         }
 
+        //private static async Task<VidoeTransferResult> Step1()
+        //{
+        //    ronObj.LogInfomration(log, RonEventId.OrchestratorProcesssStarted, $"Orchestrator Started. FileId:{vQueueItem.FileId}");
+
+        //    var loanId = await context.CallActivityAsync<string>("GetLoanId", vQueueItem.BlendId);
+        //    if (string.IsNullOrWhiteSpace(loanId))
+        //    {
+        //        ronObj.LogError(log, RonEventId.OrchestratorLoanIdNotFound, $"Orchestrator LoanId not found. FileId:{vQueueItem.FileId}");
+        //        status = "unable to get the loan Id";
+        //        ss = await context.CallActivityAsync<VideoItem>("Upsert", (videoRow, vQueueItem, status));
+        //        return VidoeTransferResult.Failed;
+        //    }
+        //}
+
         public static Func<Exception, bool> TimexpiredExceptionHandler()
         {
             return ex =>
@@ -130,9 +140,9 @@ namespace RonVideo.Activities
             };
         }
 
-        private static RonLoggerObject CreateRonLoggerObject(VideoQueueItem qItem)
+        private static RonLoggerObject CreateRonLoggerObject(ILogger log, VideoQueueItem qItem)
         {
-            return new RonLoggerObject()
+            return new RonLoggerObject(log)
             {
 
                 Id = RonEventId.OrchestratorTriggered,
